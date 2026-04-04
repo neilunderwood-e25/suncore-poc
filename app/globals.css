@@ -116,8 +116,8 @@
   --box-shadow-depth-64: drop-shadow(0px 1px 64px rgba(0, 0, 0, .1));
 
   /* Typography */
-  --font-family-primary: "Noto Sans", sans-serif;
-  --font-family-secondary: "Noto Sans", sans-serif;
+  --font-family-primary: var(--font-noto-sans), "Noto Sans", sans-serif;
+  --font-family-secondary: var(--font-noto-sans), "Noto Sans", sans-serif;
   --font-family-monospace: Monaco, monospace;
 }
 
@@ -128,7 +128,7 @@
 
 @theme inline {
   /* Fonts */
-  --font-sans: var(--font-family-primary);
+  --font-sans: var(--font-noto-sans), "Noto Sans", sans-serif;
   --font-mono: var(--font-family-monospace);
 
   /* Font sizes */
@@ -233,5 +233,5 @@
 body {
   background: var(--color-white);
   color: var(--color-darkest-grey);
-  font-family: var(--font-family-primary);
+  font-family: var(--font-noto-sans), "Noto Sans", sans-serif;
 }

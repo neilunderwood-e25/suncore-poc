@@ -2,9 +2,50 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Document } from "@contentful/rich-text-types";
-import type { HeroSlide } from "@/lib/sections/types";
+import type { HeroSlide, HeroSlideBackground } from "@/lib/sections/types";
 import { Cta } from "@/components/common/Cta";
+import { ResponsiveVideo } from "@/components/common/ResponsiveVideo";
 import { RichTextRenderer } from "@/components/common/RichText/RichText";
+
+function SlideBackground({
+  background,
+  active,
+}: {
+  background?: HeroSlideBackground | null;
+  active: boolean;
+}) {
+  if (!background) return null;
+
+  const baseClass = "absolute inset-0 transition-opacity duration-700 ease-in-out";
+
+  if (background.__typename === "Video") {
+    return (
+      <div className={baseClass} style={{ opacity: active ? 1 : 0 }}>
+        {active && (
+          <ResponsiveVideo
+            video={{ ...background, autoplay: true, loop: true, muted: true }}
+            className="h-full w-full object-cover"
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Image background
+  const url = background.desktop?.url;
+  return (
+    <div
+      className={baseClass}
+      style={{
+        opacity: active ? 1 : 0,
+        backgroundImage: url ? `url(${url})` : undefined,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+      aria-hidden={!active}
+    />
+  );
+}
 
 type HeroCarouselProps = {
   slides: HeroSlide[];
@@ -62,20 +103,13 @@ export function HeroCarousel({
   const activeSlide = slides[activeIndex];
 
   return (
-    <section className="relative w-full overflow-hidden bg-zinc-900" style={{ height: "85vh", minHeight: 500 }}>
-      {/* Background images — all preloaded, only active one visible */}
+    <section className="relative w-full overflow-hidden bg-zinc-900" style={{ height: "80vh", minHeight: 500 }}>
+      {/* Background media — Image or Video per slide */}
       {slides.map((slide, i) => (
-        <div
+        <SlideBackground
           key={slide.sys.id}
-          className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-          style={{
-            opacity: i === activeIndex ? 1 : 0,
-            backgroundImage: slide.backgroundImage?.url
-              ? `url(${slide.backgroundImage.url})`
-              : undefined,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+          background={slide.background}
+          active={i === activeIndex}
         />
       ))}
 
@@ -86,10 +120,10 @@ export function HeroCarousel({
       <div className="relative z-10 flex h-full items-center">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
           <div
-            className="max-w-xl rounded-lg bg-zinc-800/85 p-8 backdrop-blur-sm lg:p-10"
+            className="max-w-[672px] bg-midnight p-8 lg:p-10 lg:-ml-10"
           >
             {activeSlide?.heading && (
-              <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+              <h1 className="text-3xl font-bold leading-tight text-white sm:text-[] lg:text-[40px]">
                 {activeSlide.heading}
               </h1>
             )}

@@ -17,6 +17,24 @@ export type ImageEntry = {
   mobile?: ImageAsset | null;
 };
 
+export type VideoAsset = {
+  url: string | null;
+  contentType?: string | null;
+};
+
+export type VideoEntry = {
+  sys: { id: string };
+  title?: string | null;
+  altText?: string | null;
+  caption?: string | null;
+  desktop?: VideoAsset | null;
+  mobile?: VideoAsset | null;
+  posterImage?: ImageAsset | null;
+  autoplay?: boolean | null;
+  loop?: boolean | null;
+  muted?: boolean | null;
+};
+
 export type CtaEntry = {
   sys: { id: string };
   label?: string | null;
@@ -69,11 +87,15 @@ export type BaseSection = {
 /*  Section types — add new section types here as they are created     */
 /* ------------------------------------------------------------------ */
 
+export type HeroSlideBackground =
+  | (ImageEntry & { __typename: "Image" })
+  | (VideoEntry & { __typename: "Video" });
+
 export type HeroSlide = {
   sys: { id: string };
   heading?: string | null;
   description?: RichTextDocument | null;
-  backgroundImage?: ImageAsset | null;
+  background?: HeroSlideBackground | null;
   cta?: CtaEntry | null;
 };
 

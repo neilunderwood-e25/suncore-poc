@@ -9,6 +9,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
       "style-src 'self' 'unsafe-inline' https:",
       "img-src 'self' data: https: https://images.ctfassets.net",
+      "media-src 'self' https://videos.ctfassets.net",
       "font-src 'self' data: https:",
       "connect-src 'self' https://graphql.contentful.com https://preview.contentful.com https://cdn.contentful.com",
       "frame-src https:",

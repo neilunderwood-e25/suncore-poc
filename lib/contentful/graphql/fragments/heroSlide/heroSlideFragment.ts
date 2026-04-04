@@ -1,3 +1,5 @@
+import { COMMON_IMAGE_FRAGMENT } from "../image/imageFragment";
+import { COMMON_VIDEO_FRAGMENT } from "../video/videoFragment";
 import { CTA_FRAGMENT } from "../cta/ctaFragment";
 
 export const HERO_SLIDE_FRAGMENT = /* GraphQL */ `
@@ -7,14 +9,16 @@ export const HERO_SLIDE_FRAGMENT = /* GraphQL */ `
     description {
       json
     }
-    backgroundImage {
-      url
-      width
-      height
+    background {
+      __typename
+      ... on Image { ...CommonImageFragment }
+      ... on Video { ...CommonVideoFragment }
     }
     cta {
       ...CtaFields
     }
   }
+  ${COMMON_IMAGE_FRAGMENT}
+  ${COMMON_VIDEO_FRAGMENT}
   ${CTA_FRAGMENT}
 `;

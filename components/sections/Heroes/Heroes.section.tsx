@@ -61,8 +61,8 @@ export const heroesSection: SectionDefinition = {
                 }
               );
             return data?.heroSlide ?? null;
-          } catch {
-            console.error(`Failed to hydrate HeroSlide (${stub!.sys.id})`);
+          } catch (err) {
+            console.error(`Failed to hydrate HeroSlide (${stub!.sys.id}):`, err);
             return null;
           }
         })
