@@ -1,5 +1,8 @@
 import { getContentfulClient } from "./client";
-import { FLEXIBLE_PAGE_BY_SLUG, FLEXIBLE_PAGE_SLUGS } from "./queries";
+import {
+  FLEXIBLE_PAGE_BY_SLUG,
+  FLEXIBLE_PAGE_SLUGS,
+} from "./graphql/queries/flexiblePage/flexiblePageQueries";
 import { renderMode, type RenderMode } from "./settings";
 
 export const HOME_SLUG = process.env.CONTENTFUL_HOME_SLUG ?? "home";

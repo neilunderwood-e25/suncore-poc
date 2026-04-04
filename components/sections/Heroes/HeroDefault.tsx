@@ -1,5 +1,6 @@
 import type { HeroesSection } from "@/lib/sections/types";
-import { resolveCtaHref } from "@/lib/sections/utils";
+import { Cta } from "@/components/common/Cta";
+import { ResponsiveImage } from "@/components/common/ResponsiveImage";
 
 type HeroDefaultProps = {
   section: HeroesSection;
@@ -11,33 +12,13 @@ const PALETTE_STYLES: Record<string, { bg: string; text: string; sub: string }> 
   brand: { bg: "bg-indigo-600", text: "text-white", sub: "text-indigo-100" },
 };
 
-const CTA_BUTTON_STYLES: Record<string, string> = {
-  "Primary Button":
-    "bg-indigo-600 text-white hover:bg-indigo-700",
-  "Secondary Button":
-    "bg-white text-zinc-900 border border-zinc-300 hover:bg-zinc-50",
-  "Light Button":
-    "bg-white/20 text-white border border-white/30 hover:bg-white/30",
-  "Dark Button":
-    "bg-zinc-900 text-white hover:bg-zinc-800",
-  "Primary Text":
-    "text-indigo-600 underline-offset-4 hover:underline",
-  "Secondary Text":
-    "text-zinc-600 underline-offset-4 hover:underline",
-  "Light Text":
-    "text-white underline-offset-4 hover:underline",
-  "Dark Text":
-    "text-zinc-900 underline-offset-4 hover:underline",
-};
-
 export function HeroDefault({ section }: HeroDefaultProps) {
   const palette = PALETTE_STYLES[section.palette ?? "light"] ?? PALETTE_STYLES.light;
   const bgImageUrl = section.backgroundImage?.url;
-  const image = section.image;
 
   return (
     <section
-      className={`relative overflow-hidden rounded-2xl ${palette.bg} ${!bgImageUrl ? "" : ""}`}
+      className={`relative overflow-hidden rounded-2xl ${palette.bg}`}
       style={
         bgImageUrl
           ? { backgroundImage: `url(${bgImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
@@ -65,47 +46,19 @@ export function HeroDefault({ section }: HeroDefaultProps) {
 
             {section.ctas.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-4">
-                {section.ctas.map((cta) => {
-                  const style = CTA_BUTTON_STYLES[cta.type ?? "Primary Button"] ?? CTA_BUTTON_STYLES["Primary Button"];
-                  const isTextLink = cta.type?.includes("Text");
-                  return (
-                    <a
-                      key={cta.sys.id}
-                      href={resolveCtaHref(cta)}
-                      target={cta.newTab ? "_blank" : undefined}
-                      rel={cta.newTab ? "noopener noreferrer" : undefined}
-                      download={cta.linkBehavior === "Downloadable" ? true : undefined}
-                      className={`inline-flex items-center gap-2 ${
-                        isTextLink ? "text-sm font-medium" : "rounded-lg px-6 py-3 text-sm font-semibold"
-                      } transition-colors ${style}`}
-                    >
-                      {cta.label}
-                      {cta.arrowEnable && (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                        </svg>
-                      )}
-                    </a>
-                  );
-                })}
+                {section.ctas.map((cta) => (
+                  <Cta key={cta.sys.id} cta={cta} />
+                ))}
               </div>
             )}
           </div>
 
-          {image?.desktop?.url && (
+          {section.image && (
             <div className="flex justify-center">
-              <picture>
-                {image.mobile?.url && (
-                  <source media="(max-width: 767px)" srcSet={image.mobile.url} />
-                )}
-                <img
-                  src={image.desktop.url}
-                  alt={image.altText ?? ""}
-                  width={image.desktop.width ?? undefined}
-                  height={image.desktop.height ?? undefined}
-                  className="max-w-full rounded-xl shadow-lg"
-                />
-              </picture>
+              <ResponsiveImage
+                image={section.image}
+                className="max-w-full rounded-xl shadow-lg"
+              />
             </div>
           )}
         </div>

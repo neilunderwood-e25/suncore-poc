@@ -1,7 +1,9 @@
-export const HEROES_FRAGMENT_NAME = "HeroesFragment";
+import { COMMON_IMAGE_FRAGMENT } from "../image/imageFragment";
+import { CTA_FRAGMENT } from "../cta/ctaFragment";
 
 export const HEROES_FRAGMENT = /* GraphQL */ `
-  fragment HeroesFragment on Heroes {
+  fragment HeroesFields on Heroes {
+    sys { id }
     internalName
     heading
     subheading
@@ -9,11 +11,11 @@ export const HEROES_FRAGMENT = /* GraphQL */ `
       json
     }
     image {
-      ...ImageFragment
+      ...CommonImageFragment
     }
     ctasCollection(limit: 5) {
       items {
-        ...CtaFragment
+        ...CtaFields
       }
     }
     backgroundImage {
@@ -23,4 +25,6 @@ export const HEROES_FRAGMENT = /* GraphQL */ `
     }
     palette
   }
+  ${COMMON_IMAGE_FRAGMENT}
+  ${CTA_FRAGMENT}
 `;
