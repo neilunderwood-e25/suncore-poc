@@ -117,8 +117,38 @@ export function HeroCarousel({
                 <button
                   key={slide.sys.id}
                   onClick={() => goToSlide(i)}
-                  className="group flex-1 cursor-pointer border-none bg-transparent pb-6 pt-4 text-left"
+                  className="group relative flex-1 cursor-pointer border-none bg-transparent pb-6 pt-4 text-left"
                 >
+                  {/* Pause/Play button — positioned above the active slide's progress bar */}
+                  {isActive && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPaused(!isPaused);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          setIsPaused(!isPaused);
+                        }
+                      }}
+                      className="absolute -top-6 right-0 flex h-6 w-6 items-center justify-center rounded-full text-white/70 transition-colors hover:text-white"
+                      aria-label={isPaused ? "Play carousel" : "Pause carousel"}
+                    >
+                      {isPaused ? (
+                        <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      ) : (
+                        <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg>
+                      )}
+                    </span>
+                  )}
+
                   {/* Progress bar */}
                   <div className="mb-3 h-0.5 w-full overflow-hidden bg-white/30">
                     <div
@@ -142,23 +172,6 @@ export function HeroCarousel({
                 </button>
               );
             })}
-
-            {/* Pause/Play button */}
-            <button
-              onClick={() => setIsPaused(!isPaused)}
-              className="mb-6 ml-4 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/30 bg-transparent text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label={isPaused ? "Play carousel" : "Pause carousel"}
-            >
-              {isPaused ? (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              ) : (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
-              )}
-            </button>
           </div>
         </div>
       )}
