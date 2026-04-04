@@ -1,41 +1,6 @@
-export type SectionType =
-  | "heroBanner"
-  | "heroes"
-  | "featureGrid"
-  | "cardList"
-  | "testimonial"
-  | "unknown";
-
-export type BaseSection = {
-  id: string;
-  type: SectionType;
-};
-
-export type HeroBannerSection = BaseSection & {
-  type: "heroBanner";
-  heading?: string | null;
-  subheading?: string | null;
-  primaryCtaLabel?: string | null;
-  primaryCtaUrl?: string | null;
-};
-
-export type FeatureGridSection = BaseSection & {
-  type: "featureGrid";
-  heading?: string | null;
-  items?: Array<{ title?: string | null; body?: string | null }>;
-};
-
-export type CardListSection = BaseSection & {
-  type: "cardList";
-  heading?: string | null;
-  cards?: Array<{ title?: string | null; body?: string | null }>;
-};
-
-export type TestimonialSection = BaseSection & {
-  type: "testimonial";
-  quote?: string | null;
-  author?: string | null;
-};
+/* ------------------------------------------------------------------ */
+/*  Shared primitives — used across multiple section types            */
+/* ------------------------------------------------------------------ */
 
 export type ImageAsset = {
   url: string | null;
@@ -69,9 +34,21 @@ export type RichTextDocument = {
   json: unknown;
 };
 
+/* ------------------------------------------------------------------ */
+/*  Base section                                                       */
+/* ------------------------------------------------------------------ */
+
+export type BaseSection = {
+  id: string;
+  type: string;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Section types — add new section types here as they are created     */
+/* ------------------------------------------------------------------ */
+
 export type HeroesSection = BaseSection & {
   type: "heroes";
-  frontEndComponent?: string | null;
   heading?: string | null;
   subheading?: string | null;
   body?: RichTextDocument | null;
@@ -86,10 +63,8 @@ export type UnknownSection = BaseSection & {
   raw: unknown;
 };
 
-export type Section =
-  | HeroBannerSection
-  | HeroesSection
-  | FeatureGridSection
-  | CardListSection
-  | TestimonialSection
-  | UnknownSection;
+/* ------------------------------------------------------------------ */
+/*  Union — extend this as you add new section types                   */
+/* ------------------------------------------------------------------ */
+
+export type Section = HeroesSection | UnknownSection;

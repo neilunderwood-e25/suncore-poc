@@ -1,7 +1,15 @@
-import { HEROES_FRAGMENT } from "./fragments";
+import { SHARED_FRAGMENTS } from "@/lib/sections/shared-fragments";
+import { sectionRegistry } from "@/components/sections/registry";
+
+const sectionFragments = sectionRegistry.map((s) => s.fragment).join("\n");
+
+const sectionSpreads = sectionRegistry
+  .map((s) => `... on ${s.contentfulTypename} {\n              ...${s.fragmentName}\n            }`)
+  .join("\n            ");
 
 export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
-  ${HEROES_FRAGMENT}
+  ${SHARED_FRAGMENTS}
+  ${sectionFragments}
 
   query FlexiblePageBySlug($slug: String!, $locale: String!, $preview: Boolean) {
     flexiblePageCollection(
@@ -22,9 +30,7 @@ export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
             sys {
               id
             }
-            ... on Heroes {
-              ...HeroesFragment
-            }
+            ${sectionSpreads}
           }
         }
       }

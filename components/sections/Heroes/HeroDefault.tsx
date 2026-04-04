@@ -1,5 +1,5 @@
 import type { HeroesSection } from "@/lib/sections/types";
-import { resolveCtaHref } from "./index";
+import { resolveCtaHref } from "@/lib/sections/utils";
 
 type HeroDefaultProps = {
   section: HeroesSection;

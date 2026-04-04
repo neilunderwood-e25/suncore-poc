@@ -37,31 +37,8 @@ export const CTA_FRAGMENT = /* GraphQL */ `
   }
 `;
 
-export const HEROES_FRAGMENT = /* GraphQL */ `
+/** All shared fragments, included once at the top of every page query. */
+export const SHARED_FRAGMENTS = /* GraphQL */ `
   ${IMAGE_FRAGMENT}
   ${CTA_FRAGMENT}
-
-  fragment HeroesFragment on Heroes {
-    internalName
-    frontEndComponent
-    heading
-    subheading
-    body {
-      json
-    }
-    image {
-      ...ImageFragment
-    }
-    ctasCollection(limit: 5) {
-      items {
-        ...CtaFragment
-      }
-    }
-    backgroundImage {
-      url
-      width
-      height
-    }
-    palette
-  }
 `;

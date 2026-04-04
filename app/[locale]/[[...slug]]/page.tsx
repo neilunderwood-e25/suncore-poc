@@ -148,31 +148,8 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-6 py-16">
-      <header className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-          Flexible Page
-        </p>
-        <h1 className="text-4xl font-semibold text-zinc-900">
-          {page.pageTitle ?? page.slug}
-        </h1>
-        <p className="text-base text-zinc-600">
-          {preview ? "Preview" : "Published"}
-        </p>
-      </header>
-
+    <main>
       <SectionsRenderer sections={mapContentfulSections(page.sections)} />
-
-      <footer className="border-t border-zinc-200 pt-8">
-        <LanguageDropdown
-          locales={
-            cmsLocales.length ? cmsLocales : [{ code: defaultLocale }]
-          }
-          defaultLocale={defaultLocale}
-          currentLocale={locale}
-          slugSegments={slugSegments}
-        />
-      </footer>
     </main>
   );
 }

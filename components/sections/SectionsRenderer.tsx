@@ -1,11 +1,5 @@
-import type { Section, HeroesSection } from "@/lib/sections/types";
-
-import { createSectionRegistry } from "@/lib/sections/registry";
-import { Heroes } from "@/components/sections/Heroes";
-
-const SectionRegistry = createSectionRegistry({
-  heroes: ({ section }) => <Heroes section={section as HeroesSection} />,
-});
+import type { Section } from "@/lib/sections/types";
+import { sectionRegistry } from "./registry";
 
 type SectionsRendererProps = {
   sections: Section[];
@@ -19,9 +13,11 @@ export const SectionsRenderer = ({ sections }: SectionsRendererProps) => {
   return (
     <div className="space-y-6">
       {sections.map((section) => {
-        const Renderer = SectionRegistry[section.type];
-        if (!Renderer) return null;
-        return <Renderer key={section.id} section={section} />;
+        const config = sectionRegistry.find((s) => s.type === section.type);
+        if (!config) return null;
+        return (
+          <div key={section.id}>{config.render(section)}</div>
+        );
       })}
     </div>
   );
