@@ -1,19 +1,237 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------ */
+/*  Suncor design tokens                                               */
+/* ------------------------------------------------------------------ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand colors */
+  --color-black: #000;
+  --color-white: #fff;
+
+  /* Clover (green) */
+  --color-clover: #7ec352;
+  --color-clover-10: #f2f9ee;
+  --color-clover-40: #cbe7ba;
+  --color-clover-70: #a5d586;
+  --color-clover-95: #84c65b;
+
+  /* Gold */
+  --color-gold: #fdb933;
+  --color-gold-10: #fff8eb;
+  --color-gold-40: #fee3ad;
+  --color-gold-70: #fece70;
+  --color-gold-95: #fdbd3d;
+
+  /* Sky (cyan) */
+  --color-sky: #66cbe1;
+  --color-sky-10: #f0fafc;
+  --color-sky-40: #c2eaf3;
+  --color-sky-70: #94dbea;
+  --color-sky-95: #6ecee3;
+
+  /* Midnight (dark blue) */
+  --color-midnight: #253746;
+  --color-midnight-40: #a8afb5;
+  --color-midnight-70: #66737e;
+  --color-midnight-95: #30414f;
+
+  /* Dusk (purple-blue) */
+  --color-dusk: #626da1;
+  --color-dusk-40: #c0c5d9;
+  --color-dusk-70: #9199bd;
+  --color-dusk-95: #6a74a6;
+  --color-dusk-dark: #454d73;
+
+  /* Dusty blue */
+  --color-dusty-blue: #58798d;
+  --color-dusty-blue-40: #bcc9d1;
+  --color-dusty-blue-70: #8aa1af;
+  --color-dusty-blue-90: #698698;
+
+  /* Moss (muted green) */
+  --color-moss: #5a7c65;
+  --color-moss-40: #bdcbc1;
+  --color-moss-70: #8ca393;
+  --color-moss-95: #62836d;
+
+  /* Sand */
+  --color-sand: #dcba85;
+  --color-sand-40: #f1e3ce;
+  --color-sand-70: #e7cfaa;
+  --color-sand-95: #debd8b;
+
+  /* Slate */
+  --color-slate: #687983;
+  --color-slate-40: #c3c9cd;
+  --color-slate-70: #95a1a8;
+  --color-slate-95: #708089;
+
+  /* Orange */
+  --color-orange: #de751e;
+  --color-orange-40: #f2c8a5;
+  --color-orange-70: #e89e62;
+  --color-orange-95: #e07c29;
+
+  /* Red */
+  --color-red: #ce0909;
+  --color-red-10: #fae6e6;
+
+  /* Logo */
+  --color-logo-blue: #005596;
+
+  /* Greys */
+  --color-darkest-grey: #1f2528;
+  --color-dark-grey: #1f2528;
+  --color-dark-grey-40: #a5a8a9;
+  --color-dark-grey-70: #626669;
+  --color-light-grey: #d1d3d4;
+  --color-light-grey-20: #f6f6f6;
+  --color-light-grey-40: #ededee;
+  --color-light-grey-70: #dfe0e1;
+  --color-lightest-grey: #f7f7f8;
+
+  /* Status */
+  --color-success: #dff6dd;
+  --color-success-icon: #107c10;
+  --color-warning: #fff4ce;
+  --color-warning-icon: #797673;
+  --color-severe-warning: #fed9cc;
+  --color-severe-warning-icon: #d83b01;
+  --color-error-block: #fde7e9;
+  --color-error-block-icon: #a80000;
+
+  /* Gradients */
+  --background-image-energy-gradient: linear-gradient(270deg, #d32a33 0%, #d56f1d 25%, #efc42d 99.99%, #fdc23e);
+
+  /* Radius */
+  --radius-default: 0.375rem;
+  --radius-default-inner: 0.3125rem;
+
+  /* Shadows */
+  --box-shadow-depth-4: drop-shadow(0px 1px 4px rgba(0, 0, 0, .1));
+  --box-shadow-depth-8: drop-shadow(0px 1px 8px rgba(0, 0, 0, .1));
+  --box-shadow-depth-16: drop-shadow(0px 1px 16px rgba(0, 0, 0, .1));
+  --box-shadow-depth-16-dark: drop-shadow(0px 1px 16px rgba(0, 0, 0, .45));
+  --box-shadow-depth-64: drop-shadow(0px 1px 64px rgba(0, 0, 0, .1));
+
+  /* Typography */
+  --font-family-primary: "Noto Sans", sans-serif;
+  --font-family-secondary: "Noto Sans", sans-serif;
+  --font-family-monospace: Monaco, monospace;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Tailwind theme — map CSS vars to Tailwind utilities                */
+/*  Usage: bg-midnight, text-gold, text-clover-70, etc.                */
+/* ------------------------------------------------------------------ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Fonts */
+  --font-sans: var(--font-family-primary);
+  --font-mono: var(--font-family-monospace);
+
+  /* Font sizes */
+  --font-size-xs: clamp(0.75rem, 3vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 3vw, 1rem);
+  --font-size-base: clamp(1rem, 3vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 3vw, 1.375rem);
+  --font-size-xl: clamp(1.25rem, 3vw, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 3vw, 2rem);
+  --font-size-3xl: clamp(2rem, 3vw, 2.5rem);
+
+  /* Brand colors */
+  --color-black: var(--color-black);
+  --color-white: var(--color-white);
+
+  --color-clover: var(--color-clover);
+  --color-clover-10: var(--color-clover-10);
+  --color-clover-40: var(--color-clover-40);
+  --color-clover-70: var(--color-clover-70);
+  --color-clover-95: var(--color-clover-95);
+
+  --color-gold: var(--color-gold);
+  --color-gold-10: var(--color-gold-10);
+  --color-gold-40: var(--color-gold-40);
+  --color-gold-70: var(--color-gold-70);
+  --color-gold-95: var(--color-gold-95);
+
+  --color-sky: var(--color-sky);
+  --color-sky-10: var(--color-sky-10);
+  --color-sky-40: var(--color-sky-40);
+  --color-sky-70: var(--color-sky-70);
+  --color-sky-95: var(--color-sky-95);
+
+  --color-midnight: var(--color-midnight);
+  --color-midnight-40: var(--color-midnight-40);
+  --color-midnight-70: var(--color-midnight-70);
+  --color-midnight-95: var(--color-midnight-95);
+
+  --color-dusk: var(--color-dusk);
+  --color-dusk-40: var(--color-dusk-40);
+  --color-dusk-70: var(--color-dusk-70);
+  --color-dusk-95: var(--color-dusk-95);
+  --color-dusk-dark: var(--color-dusk-dark);
+
+  --color-dusty-blue: var(--color-dusty-blue);
+  --color-dusty-blue-40: var(--color-dusty-blue-40);
+  --color-dusty-blue-70: var(--color-dusty-blue-70);
+  --color-dusty-blue-90: var(--color-dusty-blue-90);
+
+  --color-moss: var(--color-moss);
+  --color-moss-40: var(--color-moss-40);
+  --color-moss-70: var(--color-moss-70);
+  --color-moss-95: var(--color-moss-95);
+
+  --color-sand: var(--color-sand);
+  --color-sand-40: var(--color-sand-40);
+  --color-sand-70: var(--color-sand-70);
+  --color-sand-95: var(--color-sand-95);
+
+  --color-slate: var(--color-slate);
+  --color-slate-40: var(--color-slate-40);
+  --color-slate-70: var(--color-slate-70);
+  --color-slate-95: var(--color-slate-95);
+
+  --color-orange: var(--color-orange);
+  --color-orange-40: var(--color-orange-40);
+  --color-orange-70: var(--color-orange-70);
+  --color-orange-95: var(--color-orange-95);
+
+  --color-red: var(--color-red);
+  --color-red-10: var(--color-red-10);
+
+  --color-logo-blue: var(--color-logo-blue);
+
+  --color-darkest-grey: var(--color-darkest-grey);
+  --color-dark-grey: var(--color-dark-grey);
+  --color-dark-grey-40: var(--color-dark-grey-40);
+  --color-dark-grey-70: var(--color-dark-grey-70);
+  --color-light-grey: var(--color-light-grey);
+  --color-light-grey-20: var(--color-light-grey-20);
+  --color-light-grey-40: var(--color-light-grey-40);
+  --color-light-grey-70: var(--color-light-grey-70);
+  --color-lightest-grey: var(--color-lightest-grey);
+
+  /* Status */
+  --color-success: var(--color-success);
+  --color-success-icon: var(--color-success-icon);
+  --color-warning: var(--color-warning);
+  --color-warning-icon: var(--color-warning-icon);
+  --color-severe-warning: var(--color-severe-warning);
+  --color-error-block: var(--color-error-block);
+
+  /* Border radius */
+  --radius-default: var(--radius-default);
+  --radius-default-inner: var(--radius-default-inner);
 }
 
+/* ------------------------------------------------------------------ */
+/*  Base styles                                                        */
+/* ------------------------------------------------------------------ */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-white);
+  color: var(--color-darkest-grey);
+  font-family: var(--font-family-primary);
 }

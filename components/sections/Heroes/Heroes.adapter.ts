@@ -1,5 +1,5 @@
 import type { RawSection } from "@/lib/sections/config";
-import type { HeroesSection, HeroSlide, CtaEntry, ImageAsset } from "@/lib/sections/types";
+import type { HeroesSection, HeroSlide, CtaEntry, ImageAsset, RichTextDocument } from "@/lib/sections/types";
 
 export function adaptHeroes(section: RawSection): HeroesSection {
   const slidesRaw =
@@ -11,7 +11,7 @@ export function adaptHeroes(section: RawSection): HeroesSection {
     .map((slide) => ({
       sys: slide.sys as { id: string },
       heading: (slide.heading as string) ?? null,
-      description: (slide.description as string) ?? null,
+      description: (slide.description as RichTextDocument) ?? null,
       backgroundImage: (slide.backgroundImage as ImageAsset) ?? null,
       cta: (slide.cta as CtaEntry) ?? null,
     }));
@@ -20,6 +20,5 @@ export function adaptHeroes(section: RawSection): HeroesSection {
     id: section.sys.id,
     type: "heroes",
     slides,
-    palette: (section.palette as string) ?? null,
   };
 }

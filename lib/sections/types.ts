@@ -72,7 +72,7 @@ export type BaseSection = {
 export type HeroSlide = {
   sys: { id: string };
   heading?: string | null;
-  description?: string | null;
+  description?: RichTextDocument | null;
   backgroundImage?: ImageAsset | null;
   cta?: CtaEntry | null;
 };
@@ -80,7 +80,6 @@ export type HeroSlide = {
 export type HeroesSection = BaseSection & {
   type: "heroes";
   slides: HeroSlide[];
-  palette?: string | null;
 };
 
 export type UnknownSection = BaseSection & {

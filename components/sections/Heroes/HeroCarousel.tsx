@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { Document } from "@contentful/rich-text-types";
 import type { HeroSlide } from "@/lib/sections/types";
 import { Cta } from "@/components/common/Cta";
+import { RichTextRenderer } from "@/components/common/RichText/RichText";
 
 type HeroCarouselProps = {
   slides: HeroSlide[];
@@ -93,9 +95,11 @@ export function HeroCarousel({
             )}
 
             {activeSlide?.description && (
-              <p className="mt-4 text-base leading-relaxed text-zinc-300 sm:text-lg">
-                {activeSlide.description}
-              </p>
+              <RichTextRenderer
+                document={activeSlide.description.json as Document}
+                links={activeSlide.description.links}
+                className="mt-4 text-base leading-relaxed text-zinc-300 sm:text-lg"
+              />
             )}
 
             {activeSlide?.cta && (
