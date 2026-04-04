@@ -1,25 +1,25 @@
 import type { RawSection } from "@/lib/sections/config";
-import type {
-  HeroesSection,
-  CtaEntry,
-  ImageEntry,
-  ImageAsset,
-  RichTextDocument,
-} from "@/lib/sections/types";
+import type { HeroesSection, HeroSlide, CtaEntry, ImageAsset } from "@/lib/sections/types";
 
 export function adaptHeroes(section: RawSection): HeroesSection {
-  const ctaItems: CtaEntry[] =
-    (section.ctasCollection as { items?: CtaEntry[] })?.items?.filter(Boolean) ?? [];
+  const slidesRaw =
+    (section.slidesCollection as { items?: Array<Record<string, unknown>> })
+      ?.items ?? [];
+
+  const slides: HeroSlide[] = slidesRaw
+    .filter(Boolean)
+    .map((slide) => ({
+      sys: slide.sys as { id: string },
+      heading: (slide.heading as string) ?? null,
+      description: (slide.description as string) ?? null,
+      backgroundImage: (slide.backgroundImage as ImageAsset) ?? null,
+      cta: (slide.cta as CtaEntry) ?? null,
+    }));
 
   return {
     id: section.sys.id,
     type: "heroes",
-    heading: (section.heading as string) ?? null,
-    subheading: (section.subheading as string) ?? null,
-    body: (section.body as RichTextDocument) ?? null,
-    image: (section.image as ImageEntry) ?? null,
-    ctas: ctaItems,
-    backgroundImage: (section.backgroundImage as ImageAsset) ?? null,
+    slides,
     palette: (section.palette as string) ?? null,
   };
 }

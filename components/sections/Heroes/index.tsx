@@ -1,10 +1,10 @@
 import type { HeroesSection } from "@/lib/sections/types";
-import { HeroDefault } from "./HeroDefault";
+import { HeroCarousel } from "./HeroCarousel";
 
 type HeroesProps = {
   section: HeroesSection;
 };
 
 export function Heroes({ section }: HeroesProps) {
-  return <HeroDefault section={section} />;
+  return <HeroCarousel slides={section.slides} />;
 }

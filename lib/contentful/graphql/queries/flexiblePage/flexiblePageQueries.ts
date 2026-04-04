@@ -1,8 +1,8 @@
-import { HEROES_FRAGMENT } from "../../fragments/heroes/heroesFragment";
-
+/**
+ * Skeleton query — fetches only __typename + sys.id for each section.
+ * Full section data is hydrated per-section in parallel via the registry.
+ */
 export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
-  ${HEROES_FRAGMENT}
-
   query FlexiblePageBySlug($slug: String!, $locale: String!, $preview: Boolean) {
     flexiblePageCollection(
       where: { slug: $slug }
@@ -21,9 +21,6 @@ export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
             __typename
             sys {
               id
-            }
-            ... on Heroes {
-              ...HeroesFields
             }
           }
         }

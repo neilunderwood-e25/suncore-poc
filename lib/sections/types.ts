@@ -30,8 +30,30 @@ export type CtaEntry = {
   downloadableAsset?: { url?: string | null } | null;
 };
 
+export type RichTextAsset = {
+  sys: { id: string };
+  url?: string | null;
+  title?: string | null;
+  description?: string | null;
+  contentType?: string | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+export type RichTextLinks = {
+  assets?: {
+    block?: Array<RichTextAsset | null>;
+  };
+  entries?: {
+    block?: Array<{ __typename: string; sys: { id: string }; [key: string]: unknown } | null>;
+    inline?: Array<{ __typename: string; sys: { id: string }; [key: string]: unknown } | null>;
+    hyperlink?: Array<{ __typename: string; sys: { id: string }; [key: string]: unknown } | null>;
+  };
+};
+
 export type RichTextDocument = {
   json: unknown;
+  links?: RichTextLinks | null;
 };
 
 /* ------------------------------------------------------------------ */
@@ -47,14 +69,17 @@ export type BaseSection = {
 /*  Section types — add new section types here as they are created     */
 /* ------------------------------------------------------------------ */
 
+export type HeroSlide = {
+  sys: { id: string };
+  heading?: string | null;
+  description?: string | null;
+  backgroundImage?: ImageAsset | null;
+  cta?: CtaEntry | null;
+};
+
 export type HeroesSection = BaseSection & {
   type: "heroes";
-  heading?: string | null;
-  subheading?: string | null;
-  body?: RichTextDocument | null;
-  image?: ImageEntry | null;
-  ctas: CtaEntry[];
-  backgroundImage?: ImageAsset | null;
+  slides: HeroSlide[];
   palette?: string | null;
 };
 

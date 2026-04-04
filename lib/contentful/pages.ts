@@ -4,18 +4,23 @@ import {
   FLEXIBLE_PAGE_SLUGS,
 } from "./graphql/queries/flexiblePage/flexiblePageQueries";
 import { renderMode, type RenderMode } from "./settings";
+import { sectionRegistry } from "@/components/sections/registry";
+import type { RawSection, HydrateOptions } from "@/lib/sections/config";
 
 export const HOME_SLUG = process.env.CONTENTFUL_HOME_SLUG ?? "home";
 
-export type FlexiblePageSection = {
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+
+/** Skeleton stub returned by the page query (just typename + id). */
+type SectionStub = {
   __typename: string;
   sys: { id: string };
-  heading?: string | null;
-  subheading?: string | null;
-  primaryCtaLabel?: string | null;
-  primaryCtaUrl?: string | null;
-  [key: string]: unknown;
 };
+
+/** Fully hydrated section (raw Contentful data). */
+export type FlexiblePageSection = RawSection;
 
 export type FlexiblePage = {
   sys: { id: string };
@@ -31,7 +36,7 @@ type FlexiblePageBySlugResponse = {
       slug: string;
       pageTitle?: string | null;
       sectionsCollection?: {
-        items?: Array<FlexiblePageSection | null> | null;
+        items?: Array<SectionStub | null> | null;
       } | null;
     }>;
   };
@@ -43,14 +48,52 @@ type FlexiblePageSlugsResponse = {
   };
 };
 
+type FetchOptions = {
+  locale: string;
+  preview?: boolean;
+  revalidate?: number | false;
+  mode?: RenderMode;
+};
+
+/* ------------------------------------------------------------------ */
+/*  Hydration — fetch full data for each section stub in parallel      */
+/* ------------------------------------------------------------------ */
+
+async function hydrateSections(
+  stubs: SectionStub[],
+  options: HydrateOptions
+): Promise<FlexiblePageSection[]> {
+  const results = await Promise.all(
+    stubs.map(async (stub) => {
+      const config = sectionRegistry.find(
+        (s) => s.contentfulTypename === stub.__typename
+      );
+
+      if (!config) {
+        // Unknown section type — pass the stub through as-is
+        return stub as FlexiblePageSection;
+      }
+
+      const hydrated = await config.hydrate(stub.sys.id, options);
+      if (!hydrated) return null;
+
+      return {
+        ...hydrated,
+        __typename: stub.__typename,
+      } as FlexiblePageSection;
+    })
+  );
+
+  return results.filter((s): s is FlexiblePageSection => s !== null);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Page fetching                                                      */
+/* ------------------------------------------------------------------ */
+
 export const getFlexiblePageBySlug = async (
   slug: string,
-  options: {
-    locale: string;
-    preview?: boolean;
-    revalidate?: number | false;
-    mode?: RenderMode;
-  }
+  options: FetchOptions
 ) => {
   const client = getContentfulClient({
     preview: options.preview,
@@ -87,14 +130,23 @@ export const getFlexiblePageBySlug = async (
     return null;
   }
 
-  const rawSections = page.sectionsCollection?.items ?? [];
+  const stubs = (page.sectionsCollection?.items ?? []).filter(
+    (s): s is SectionStub => s !== null
+  );
+
+  // Hydrate all sections in parallel
+  const sections = await hydrateSections(stubs, {
+    locale: options.locale,
+    preview: options.preview,
+    revalidate: options.revalidate,
+    mode: options.mode,
+  });
+
   return {
     sys: page.sys,
     slug: page.slug,
     pageTitle: page.pageTitle ?? null,
-    sections: rawSections.filter(
-      (section): section is FlexiblePageSection => Boolean(section)
-    ),
+    sections,
   } satisfies FlexiblePage;
 };
 
