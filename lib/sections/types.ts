@@ -105,6 +105,23 @@ export type HeroesSection = BaseSection & {
   slides: HeroSlide[];
 };
 
+export type StockItem = {
+  sys: { id: string };
+  exchange?: string | null;
+  apiSymbol?: string | null;
+  manualPrice?: number | null;
+  manualChange?: number | null;
+};
+
+export type StockTickerSection = BaseSection & {
+  type: "stockTicker";
+  companyName?: string | null;
+  stocks: StockItem[];
+  delayDisclaimer?: string | null;
+  cta?: CtaEntry | null;
+  liveQuotes?: Record<string, { price: number; change: number }>;
+};
+
 export type UnknownSection = BaseSection & {
   type: "unknown";
   raw: unknown;
@@ -114,4 +131,4 @@ export type UnknownSection = BaseSection & {
 /*  Union — extend this as you add new section types                   */
 /* ------------------------------------------------------------------ */
 
-export type Section = HeroesSection | UnknownSection;
+export type Section = HeroesSection | StockTickerSection | UnknownSection;
