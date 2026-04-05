@@ -41,16 +41,20 @@ export function DesktopHero({
       ))}
 
       {/* Overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/0 via-black/0 to-transparent" />
 
+      {/* Top dark gradient */}
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-50 bg-gradient-to-b from-black/90 to-transparent" />
 
+      {/* Bottom dark gradient */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-50 bg-gradient-to-t from-black/90 to-transparent" />
 
       {/* Content card */}
       <div className="absolute left-0 z-10 w-full px-8" style={{ top: 175 }}>
         <div className="mx-auto w-full max-w-7xl">
           <div className="max-w-[672px] bg-midnight p-[56px] -ml-19">
             {activeSlide?.heading && (
-              <h1 className="text-[40px] font-bold leading-tight text-white">
+              <h1 className="text-[40px] font-bold leading-snug text-white">
                 {activeSlide.heading}
               </h1>
             )}
@@ -59,7 +63,7 @@ export function DesktopHero({
               <RichTextRenderer
                 document={activeSlide.description.json as Document}
                 links={activeSlide.description.links}
-                className="mt-4 text-base leading-relaxed text-zinc-300"
+                className="mt-4 text-lg leading-relaxed text-white/90"
               />
             )}
 
@@ -75,7 +79,7 @@ export function DesktopHero({
       {/* Bottom nav — progress bars + titles */}
       {slides.length > 1 && (
         <div className="absolute bottom-[40px] left-0 right-0 z-20">
-          <div className="flex gap-[32px] items-start px-65 w-full">
+          <div className="flex gap-[32px] items-start px-[265px] w-full">
             {slides.map((slide, i) => {
               const isActive = i === activeIndex;
               return (
@@ -100,15 +104,15 @@ export function DesktopHero({
                           togglePause();
                         }
                       }}
-                      className="absolute -top-6 left-0 text-white/70 transition-colors hover:text-white"
+                      className="absolute -top-4 -left-2 text-white/70 transition-colors hover:text-white"
                       aria-label={isPaused ? "Play carousel" : "Pause carousel"}
                     >
                       {isPaused ? (
-                        <svg className="h-[34px] w-[30px]" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-[24px] w-[24px]" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       ) : (
-                        <svg className="h-[34px] w-[30px]" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-[24px] w-[24px]" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                         </svg>
                       )}
@@ -129,7 +133,7 @@ export function DesktopHero({
 
                   {/* Slide title */}
                   <span
-                    className={`block text-[22px] font-bold transition-colors ${isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
+                    className={`block text-[22px] font-semibold transition-colors ${isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
                       }`}
                   >
                     {slide.heading}
