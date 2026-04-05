@@ -20,6 +20,8 @@ import { getContentfulLocales } from "@/lib/contentful/locales";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+export const dynamic = "force-dynamic";
+
 type FlexiblePageParams = {
   params: Promise<{ locale: string; slug?: string[] }>;
 };
@@ -62,8 +64,6 @@ export const generateStaticParams = async () => {
     return [{ locale: DEFAULT_URL_LOCALE, slug: [] }];
   }
 };
-
-export const revalidate = renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false;
 
 export const generateMetadata = async ({ params }: FlexiblePageParams) => {
   try {

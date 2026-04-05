@@ -26,7 +26,7 @@ export function Cta({ cta, className }: CtaProps) {
       target={cta.newTab ? "_blank" : undefined}
       rel={cta.newTab ? "noopener noreferrer" : undefined}
       download={cta.linkBehavior === "Downloadable" ? true : undefined}
-      className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors ${style} ${className ?? ""}`}
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors ${style} ${className ?? ""}`}
     >
       {cta.label}
       {cta.arrowEnable && (

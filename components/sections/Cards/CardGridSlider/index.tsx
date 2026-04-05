@@ -16,15 +16,10 @@ function FactCard({ card }: { card: CardEntry }) {
     card.externalLink ??
     (card.internalLink?.slug ? `/${card.internalLink.slug}` : null);
 
-  const Tag = href ? "a" : "div";
+  const isClickable = !!href;
 
-  return (
-    <Tag
-      {...(href ? { href } : {})}
-      className={`flex h-full flex-col rounded-lg bg-white p-6 lg:p-8 ${
-        href ? "cursor-pointer transition-shadow hover:shadow-lg" : ""
-      }`}
-    >
+  const content = (
+    <>
       {card.category && (
         <span className="text-[13px] font-semibold uppercase tracking-wider text-darkest-grey">
           {card.category}
@@ -38,7 +33,9 @@ function FactCard({ card }: { card: CardEntry }) {
       )}
 
       {card.stat && (
-        <span className="mt-5 text-[28px] font-bold leading-tight text-darkest-grey lg:text-[32px]">
+        <span className={`mt-5 text-[28px] font-bold leading-tight text-darkest-grey transition-colors lg:text-[32px] ${
+          isClickable ? "group-hover:text-dusk-95" : ""
+        }`}>
           {card.stat}
         </span>
       )}
@@ -50,7 +47,24 @@ function FactCard({ card }: { card: CardEntry }) {
           className="mt-3 text-[15px] leading-relaxed text-dark-grey-70"
         />
       )}
-    </Tag>
+    </>
+  );
+
+  if (isClickable) {
+    return (
+      <a
+        href={href!}
+        className="clickable-card group flex h-full flex-col rounded-lg bg-white p-6 transition-shadow hover:shadow-lg lg:p-8"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col rounded-lg bg-white p-6 lg:p-8">
+      {content}
+    </div>
   );
 }
 

@@ -1,11 +1,25 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ */
-/*  Suncor design tokens                                               */
+/*  Tailwind theme — Suncor design tokens                              */
+/*  Usage: bg-midnight, text-gold, border-clover-70, etc.              */
 /* ------------------------------------------------------------------ */
 
-:root {
-  /* Brand colors */
+@theme inline {
+  /* Fonts */
+  --font-sans: var(--font-noto-sans), "Noto Sans", sans-serif;
+  --font-mono: Monaco, monospace;
+
+  /* Font sizes */
+  --font-size-xs: clamp(0.75rem, 3vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 3vw, 1rem);
+  --font-size-base: clamp(1rem, 3vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 3vw, 1.375rem);
+  --font-size-xl: clamp(1.25rem, 3vw, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 3vw, 2rem);
+  --font-size-3xl: clamp(2rem, 3vw, 2.5rem);
+
+  /* Black / White */
   --color-black: #000;
   --color-white: #fff;
 
@@ -97,133 +111,24 @@
   --color-warning: #fff4ce;
   --color-warning-icon: #797673;
   --color-severe-warning: #fed9cc;
-  --color-severe-warning-icon: #d83b01;
   --color-error-block: #fde7e9;
-  --color-error-block-icon: #a80000;
 
-  /* Gradients */
-  --background-image-energy-gradient: linear-gradient(270deg, #d32a33 0%, #d56f1d 25%, #efc42d 99.99%, #fdc23e);
-
-  /* Radius */
+  /* Border radius */
   --radius-default: 0.375rem;
   --radius-default-inner: 0.3125rem;
+}
 
-  /* Shadows */
+/* ------------------------------------------------------------------ */
+/*  Additional CSS variables (non-Tailwind, used in inline styles)     */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --background-image-energy-gradient: linear-gradient(270deg, #d32a33 0%, #d56f1d 25%, #efc42d 99.99%, #fdc23e);
   --box-shadow-depth-4: drop-shadow(0px 1px 4px rgba(0, 0, 0, .1));
   --box-shadow-depth-8: drop-shadow(0px 1px 8px rgba(0, 0, 0, .1));
   --box-shadow-depth-16: drop-shadow(0px 1px 16px rgba(0, 0, 0, .1));
   --box-shadow-depth-16-dark: drop-shadow(0px 1px 16px rgba(0, 0, 0, .45));
   --box-shadow-depth-64: drop-shadow(0px 1px 64px rgba(0, 0, 0, .1));
-
-  /* Typography */
-  --font-family-primary: var(--font-noto-sans), "Noto Sans", sans-serif;
-  --font-family-secondary: var(--font-noto-sans), "Noto Sans", sans-serif;
-  --font-family-monospace: Monaco, monospace;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Tailwind theme — map CSS vars to Tailwind utilities                */
-/*  Usage: bg-midnight, text-gold, text-clover-70, etc.                */
-/* ------------------------------------------------------------------ */
-
-@theme inline {
-  /* Fonts */
-  --font-sans: var(--font-noto-sans), "Noto Sans", sans-serif;
-  --font-mono: var(--font-family-monospace);
-
-  /* Font sizes */
-  --font-size-xs: clamp(0.75rem, 3vw, 0.875rem);
-  --font-size-sm: clamp(0.875rem, 3vw, 1rem);
-  --font-size-base: clamp(1rem, 3vw, 1.125rem);
-  --font-size-lg: clamp(1.125rem, 3vw, 1.375rem);
-  --font-size-xl: clamp(1.25rem, 3vw, 1.5rem);
-  --font-size-2xl: clamp(1.5rem, 3vw, 2rem);
-  --font-size-3xl: clamp(2rem, 3vw, 2.5rem);
-
-  /* Brand colors */
-  --color-black: var(--color-black);
-  --color-white: var(--color-white);
-
-  --color-clover: var(--color-clover);
-  --color-clover-10: var(--color-clover-10);
-  --color-clover-40: var(--color-clover-40);
-  --color-clover-70: var(--color-clover-70);
-  --color-clover-95: var(--color-clover-95);
-
-  --color-gold: var(--color-gold);
-  --color-gold-10: var(--color-gold-10);
-  --color-gold-40: var(--color-gold-40);
-  --color-gold-70: var(--color-gold-70);
-  --color-gold-95: var(--color-gold-95);
-
-  --color-sky: var(--color-sky);
-  --color-sky-10: var(--color-sky-10);
-  --color-sky-40: var(--color-sky-40);
-  --color-sky-70: var(--color-sky-70);
-  --color-sky-95: var(--color-sky-95);
-
-  --color-midnight: var(--color-midnight);
-  --color-midnight-40: var(--color-midnight-40);
-  --color-midnight-70: var(--color-midnight-70);
-  --color-midnight-95: var(--color-midnight-95);
-
-  --color-dusk: var(--color-dusk);
-  --color-dusk-40: var(--color-dusk-40);
-  --color-dusk-70: var(--color-dusk-70);
-  --color-dusk-95: var(--color-dusk-95);
-  --color-dusk-dark: var(--color-dusk-dark);
-
-  --color-dusty-blue: var(--color-dusty-blue);
-  --color-dusty-blue-40: var(--color-dusty-blue-40);
-  --color-dusty-blue-70: var(--color-dusty-blue-70);
-  --color-dusty-blue-90: var(--color-dusty-blue-90);
-
-  --color-moss: var(--color-moss);
-  --color-moss-40: var(--color-moss-40);
-  --color-moss-70: var(--color-moss-70);
-  --color-moss-95: var(--color-moss-95);
-
-  --color-sand: var(--color-sand);
-  --color-sand-40: var(--color-sand-40);
-  --color-sand-70: var(--color-sand-70);
-  --color-sand-95: var(--color-sand-95);
-
-  --color-slate: var(--color-slate);
-  --color-slate-40: var(--color-slate-40);
-  --color-slate-70: var(--color-slate-70);
-  --color-slate-95: var(--color-slate-95);
-
-  --color-orange: var(--color-orange);
-  --color-orange-40: var(--color-orange-40);
-  --color-orange-70: var(--color-orange-70);
-  --color-orange-95: var(--color-orange-95);
-
-  --color-red: var(--color-red);
-  --color-red-10: var(--color-red-10);
-
-  --color-logo-blue: var(--color-logo-blue);
-
-  --color-darkest-grey: var(--color-darkest-grey);
-  --color-dark-grey: var(--color-dark-grey);
-  --color-dark-grey-40: var(--color-dark-grey-40);
-  --color-dark-grey-70: var(--color-dark-grey-70);
-  --color-light-grey: var(--color-light-grey);
-  --color-light-grey-20: var(--color-light-grey-20);
-  --color-light-grey-40: var(--color-light-grey-40);
-  --color-light-grey-70: var(--color-light-grey-70);
-  --color-lightest-grey: var(--color-lightest-grey);
-
-  /* Status */
-  --color-success: var(--color-success);
-  --color-success-icon: var(--color-success-icon);
-  --color-warning: var(--color-warning);
-  --color-warning-icon: var(--color-warning-icon);
-  --color-severe-warning: var(--color-severe-warning);
-  --color-error-block: var(--color-error-block);
-
-  /* Border radius */
-  --radius-default: var(--radius-default);
-  --radius-default-inner: var(--radius-default-inner);
 }
 
 /* ------------------------------------------------------------------ */
@@ -231,7 +136,16 @@
 /* ------------------------------------------------------------------ */
 
 body {
-  background: var(--color-white);
-  color: var(--color-darkest-grey);
+  background: #fff;
+  color: #1f2528;
   font-family: var(--font-noto-sans), "Noto Sans", sans-serif;
+}
+
+a, button, [role="button"] {
+  cursor: pointer;
+}
+
+.clickable-card,
+.clickable-card * {
+  cursor: pointer !important;
 }

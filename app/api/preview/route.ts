@@ -21,7 +21,7 @@ export const GET = async (request: Request) => {
       );
     }
 
-    draftMode().enable();
+    (await draftMode()).enable();
 
     // Validate and sanitize slug
     const sanitizedSlug = slug.startsWith("/") ? slug : `/${slug}`;

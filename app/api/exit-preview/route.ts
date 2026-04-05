@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export const GET = async (request: Request) => {
   try {
-    draftMode().disable();
+    (await draftMode()).disable();
 
     const url = new URL(request.url);
     const slug = url.searchParams.get("slug") ?? "/";
