@@ -43,10 +43,12 @@ export function DesktopHero({
       {/* Overlay */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
 
+
+
       {/* Content card */}
-      <div className="absolute left-0 z-10 w-full px-8" style={{ top: 146 }}>
+      <div className="absolute left-0 z-10 w-full px-8" style={{ top: 175 }}>
         <div className="mx-auto w-full max-w-7xl">
-          <div className="max-w-[672px] bg-midnight p-[56px] -ml-6">
+          <div className="max-w-[672px] bg-midnight p-[56px] -ml-19">
             {activeSlide?.heading && (
               <h1 className="text-[40px] font-bold leading-tight text-white">
                 {activeSlide.heading}
@@ -73,7 +75,7 @@ export function DesktopHero({
       {/* Bottom nav — progress bars + titles */}
       {slides.length > 1 && (
         <div className="absolute bottom-[40px] left-0 right-0 z-20">
-          <div className="mx-auto flex max-w-7xl gap-[32px] items-start px-8">
+          <div className="flex gap-[32px] items-start px-65 w-full">
             {slides.map((slide, i) => {
               const isActive = i === activeIndex;
               return (
@@ -119,7 +121,7 @@ export function DesktopHero({
                       className="h-full transition-all ease-linear"
                       style={{
                         width: isActive ? `${progress}%` : i < activeIndex ? "100%" : "0%",
-                        backgroundColor: isActive ? "#f59e0b" : "rgba(255,255,255,0.6)",
+                        backgroundColor: isActive ? "#f0a525ff" : "rgba(255,255,255,0.6)",
                         transitionDuration: isActive ? "50ms" : "300ms",
                       }}
                     />
@@ -127,9 +129,8 @@ export function DesktopHero({
 
                   {/* Slide title */}
                   <span
-                    className={`block text-[22px] font-bold transition-colors ${
-                      isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
-                    }`}
+                    className={`block text-[22px] font-bold transition-colors ${isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
+                      }`}
                   >
                     {slide.heading}
                   </span>
