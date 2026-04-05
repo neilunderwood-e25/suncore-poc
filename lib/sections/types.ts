@@ -135,6 +135,7 @@ export type CardEntry = {
 export type CardsSection = BaseSection & {
   type: "cards";
   frontEndComponent?: string | null;
+  subtitle?: string | null;
   heading?: string | null;
   cards: CardEntry[];
   cta?: CtaEntry | null;

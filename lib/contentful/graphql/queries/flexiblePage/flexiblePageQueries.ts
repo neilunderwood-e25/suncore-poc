@@ -19,8 +19,8 @@ export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
         sectionsCollection(limit: 20) {
           items {
             __typename
-            sys {
-              id
+            ... on Entry {
+              sys { id }
             }
           }
         }

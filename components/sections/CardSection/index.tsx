@@ -2,6 +2,7 @@ import type { Document } from "@contentful/rich-text-types";
 import type { CardsSection } from "@/lib/sections/types";
 import { RichTextRenderer } from "@/components/common/RichText/RichText";
 import { CardGridSlider } from "./CardGridSlider";
+import { CardGrid } from "./CardGrid";
 
 type CardsProps = {
   section: CardsSection;
@@ -12,6 +13,10 @@ export function Cards({ section }: CardsProps) {
 
   if (frontEndComponent === "card-grid-slider") {
     return <CardGridSlider section={section} />;
+  }
+
+  if (frontEndComponent === "card-grid") {
+    return <CardGrid section={section} />;
   }
 
   // default — simple card grid

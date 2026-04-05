@@ -4,7 +4,7 @@ import { getContentfulClient } from "@/lib/contentful/client";
 import { renderMode } from "@/lib/contentful/settings";
 import { STOCK_TICKER_BY_ID } from "@/lib/contentful/graphql/queries/stockTicker/stockTickerQueries";
 import { fetchStockQuotes } from "@/lib/stocks/twelveData";
-import { StockTicker } from "@/components/sections/StockTicker";
+import { StockTicker } from "@/components/sections/StockTickerBar";
 
 type StockTickerResponse = {
   stockTicker?: {

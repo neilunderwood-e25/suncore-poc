@@ -3,12 +3,13 @@ import type { CardsSection, CardEntry, CtaEntry } from "@/lib/sections/types";
 import { getContentfulClient } from "@/lib/contentful/client";
 import { renderMode } from "@/lib/contentful/settings";
 import { CARDS_BY_ID } from "@/lib/contentful/graphql/queries/cards/cardsQueries";
-import { Cards } from "@/components/sections/Cards";
+import { Cards } from "@/components/sections/CardSection";
 
 type CardsResponse = {
   cards?: {
     sys: { id: string };
     frontEndComponent?: string | null;
+    subtitle?: string | null;
     heading?: string | null;
     cardsCollection?: {
       items?: Array<CardEntry | null> | null;
@@ -49,6 +50,7 @@ export const cardsSection: SectionDefinition = {
         id: section.sys.id,
         type: "cards",
         frontEndComponent: section.frontEndComponent ?? null,
+        subtitle: section.subtitle ?? null,
         heading: section.heading ?? null,
         cards,
         cta: section.cta ?? null,

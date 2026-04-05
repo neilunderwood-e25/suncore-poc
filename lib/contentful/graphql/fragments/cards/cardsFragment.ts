@@ -6,6 +6,7 @@ export const CARDS_FRAGMENT = /* GraphQL */ `
     sys { id }
     internalName
     frontEndComponent
+    subtitle
     heading
     cardsCollection(limit: 20) {
       items {
