@@ -1,6 +1,7 @@
 import type { SectionDefinition } from "./config";
 import { heroesSection } from "./definitions/heroes";
 import { stockTickerSection } from "./definitions/stockTicker";
+import { cardsSection } from "./definitions/cards";
 
 /**
  * Central section registry.
@@ -13,4 +14,5 @@ import { stockTickerSection } from "./definitions/stockTicker";
 export const sectionRegistry: SectionDefinition[] = [
   heroesSection,
   stockTickerSection,
+  cardsSection,
 ];

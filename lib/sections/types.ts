@@ -122,6 +122,24 @@ export type StockTickerSection = BaseSection & {
   liveQuotes?: Record<string, { price: number; change: number }>;
 };
 
+export type CardEntry = {
+  sys: { id: string };
+  category?: string | null;
+  icon?: ImageEntry | null;
+  stat?: string | null;
+  description?: RichTextDocument | null;
+  externalLink?: string | null;
+  internalLink?: { slug?: string | null } | null;
+};
+
+export type CardsSection = BaseSection & {
+  type: "cards";
+  frontEndComponent?: string | null;
+  heading?: string | null;
+  cards: CardEntry[];
+  cta?: CtaEntry | null;
+};
+
 export type UnknownSection = BaseSection & {
   type: "unknown";
   raw: unknown;
@@ -131,4 +149,4 @@ export type UnknownSection = BaseSection & {
 /*  Union — extend this as you add new section types                   */
 /* ------------------------------------------------------------------ */
 
-export type Section = HeroesSection | StockTickerSection | UnknownSection;
+export type Section = HeroesSection | StockTickerSection | CardsSection | UnknownSection;
