@@ -101,6 +101,7 @@ export type HeroSlide = {
 
 export type HeroesSection = BaseSection & {
   type: "heroes";
+  frontEndComponent?: string | null;
   slides: HeroSlide[];
 };
 

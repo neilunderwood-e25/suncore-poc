@@ -4,7 +4,6 @@ import { getLocale } from "next-intl/server";
 
 import { LanguageDropdown } from "@/components/LanguageDropdown";
 import { SectionsRenderer } from "@/components/sections/SectionsRenderer";
-import { mapContentfulSections } from "@/lib/adapters/contentful/sectionAdapter";
 import { getContentfulLocales } from "@/lib/contentful/locales";
 import {
   HOME_SLUG,
@@ -149,7 +148,7 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
 
   return (
     <main>
-      <SectionsRenderer sections={mapContentfulSections(page.sections)} />
+      <SectionsRenderer sections={page.sections} />
     </main>
   );
 }

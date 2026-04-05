@@ -1,23 +1,13 @@
 import type { CtaEntry } from "@/lib/sections/types";
 import { resolveCtaHref } from "@/lib/sections/utils";
 
-const CTA_BUTTON_STYLES: Record<string, string> = {
+const CTA_STYLES: Record<string, string> = {
   "Primary Button":
-    "bg-indigo-600 text-white hover:bg-indigo-700",
+    "bg-midnight text-white hover:bg-midnight-95",
   "Secondary Button":
-    "bg-white text-zinc-900 border border-zinc-300 hover:bg-zinc-50",
-  "Light Button":
-    "bg-white/20 text-white border border-white/30 hover:bg-white/30",
-  "Dark Button":
-    "bg-zinc-900 text-white hover:bg-zinc-800",
-  "Primary Text":
-    "text-indigo-600 underline-offset-4 hover:underline",
-  "Secondary Text":
-    "text-zinc-600 underline-offset-4 hover:underline",
-  "Light Text":
-    "text-white underline-offset-4 hover:underline",
-  "Dark Text":
-    "text-zinc-900 underline-offset-4 hover:underline",
+    "bg-gold text-darkest-grey hover:bg-gold-95",
+  "Outline Button":
+    "bg-transparent text-white border border-white hover:bg-white hover:text-midnight",
 };
 
 type CtaProps = {
@@ -27,9 +17,8 @@ type CtaProps = {
 
 export function Cta({ cta, className }: CtaProps) {
   const style =
-    CTA_BUTTON_STYLES[cta.type ?? "Primary Button"] ??
-    CTA_BUTTON_STYLES["Primary Button"];
-  const isTextLink = cta.type?.includes("Text");
+    CTA_STYLES[cta.type ?? "Primary Button"] ??
+    CTA_STYLES["Primary Button"];
 
   return (
     <a
@@ -37,11 +26,7 @@ export function Cta({ cta, className }: CtaProps) {
       target={cta.newTab ? "_blank" : undefined}
       rel={cta.newTab ? "noopener noreferrer" : undefined}
       download={cta.linkBehavior === "Downloadable" ? true : undefined}
-      className={`inline-flex items-center gap-2 ${
-        isTextLink
-          ? "text-sm font-medium"
-          : "rounded-lg px-6 py-3 text-sm font-semibold"
-      } transition-colors ${style} ${className ?? ""}`}
+      className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors ${style} ${className ?? ""}`}
     >
       {cta.label}
       {cta.arrowEnable && (

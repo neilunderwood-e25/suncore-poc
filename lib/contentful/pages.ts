@@ -5,7 +5,8 @@ import {
 } from "./graphql/queries/flexiblePage/flexiblePageQueries";
 import { renderMode, type RenderMode } from "./settings";
 import { sectionRegistry } from "@/components/sections/registry";
-import type { RawSection, HydrateOptions } from "@/lib/sections/config";
+import type { HydrateOptions } from "@/lib/sections/config";
+import type { Section, UnknownSection } from "@/lib/sections/types";
 
 export const HOME_SLUG = process.env.CONTENTFUL_HOME_SLUG ?? "home";
 
@@ -13,20 +14,16 @@ export const HOME_SLUG = process.env.CONTENTFUL_HOME_SLUG ?? "home";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-/** Skeleton stub returned by the page query (just typename + id). */
 type SectionStub = {
   __typename: string;
   sys: { id: string };
 };
 
-/** Fully hydrated section (raw Contentful data). */
-export type FlexiblePageSection = RawSection;
-
 export type FlexiblePage = {
   sys: { id: string };
   slug: string;
   pageTitle?: string | null;
-  sections: FlexiblePageSection[];
+  sections: Section[];
 };
 
 type FlexiblePageBySlugResponse = {
@@ -56,13 +53,13 @@ type FetchOptions = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Hydration — fetch full data for each section stub in parallel      */
+/*  Hydration — each section hydrates itself via the registry           */
 /* ------------------------------------------------------------------ */
 
 async function hydrateSections(
   stubs: SectionStub[],
   options: HydrateOptions
-): Promise<FlexiblePageSection[]> {
+): Promise<Section[]> {
   const results = await Promise.all(
     stubs.map(async (stub) => {
       const config = sectionRegistry.find(
@@ -70,21 +67,18 @@ async function hydrateSections(
       );
 
       if (!config) {
-        // Unknown section type — pass the stub through as-is
-        return stub as FlexiblePageSection;
+        return {
+          id: stub.sys.id,
+          type: "unknown",
+          raw: stub,
+        } satisfies UnknownSection;
       }
 
-      const hydrated = await config.hydrate(stub.sys.id, options);
-      if (!hydrated) return null;
-
-      return {
-        ...hydrated,
-        __typename: stub.__typename,
-      } as FlexiblePageSection;
+      return config.hydrate(stub.sys.id, options);
     })
   );
 
-  return results.filter((s): s is FlexiblePageSection => s !== null);
+  return results.filter((s): s is Section => s !== null);
 }
 
 /* ------------------------------------------------------------------ */
@@ -134,7 +128,6 @@ export const getFlexiblePageBySlug = async (
     (s): s is SectionStub => s !== null
   );
 
-  // Hydrate all sections in parallel
   const sections = await hydrateSections(stubs, {
     locale: options.locale,
     preview: options.preview,
