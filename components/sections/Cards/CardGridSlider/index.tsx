@@ -21,19 +21,19 @@ function FactCard({ card }: { card: CardEntry }) {
   const content = (
     <>
       {card.category && (
-        <span className="text-[13px] font-semibold uppercase tracking-wider text-darkest-grey">
+        <span className="text-[14px] uppercase tracking-wider text-darkest-grey">
           {card.category}
         </span>
       )}
 
       {card.icon && (
         <div className="mt-5">
-          <ResponsiveImage image={card.icon} className="h-10 w-10 object-contain" />
+          <ResponsiveImage image={card.icon} className="h-[32px] w-[32px] object-contain" />
         </div>
       )}
 
       {card.stat && (
-        <span className={`mt-5 text-[28px] font-bold leading-tight text-darkest-grey transition-colors lg:text-[32px] ${
+        <span className={`mt-5 text-[18px] font-bold leading-tight text-darkest-grey transition-colors lg:text-[22px] ${
           isClickable ? "group-hover:text-dusk-95" : ""
         }`}>
           {card.stat}
@@ -44,7 +44,7 @@ function FactCard({ card }: { card: CardEntry }) {
         <RichTextRenderer
           document={card.description.json as Document}
           links={card.description.links}
-          className="mt-3 text-[15px] leading-relaxed text-dark-grey-70"
+          className="mt-5 text-[16px] leading-[24px] text-darkest-grey"
         />
       )}
     </>
@@ -54,7 +54,7 @@ function FactCard({ card }: { card: CardEntry }) {
     return (
       <a
         href={href!}
-        className="clickable-card group flex h-full flex-col rounded-lg bg-white p-6 transition-shadow hover:shadow-lg lg:p-8"
+        className="clickable-card group flex h-full flex-col rounded-[6px] bg-white p-6 transition-shadow hover:shadow-lg lg:p-6 min-h-[342px]"
       >
         {content}
       </a>
@@ -62,7 +62,7 @@ function FactCard({ card }: { card: CardEntry }) {
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg bg-white p-6 lg:p-8">
+    <div className="flex h-full flex-col rounded-lg bg-white p-6 lg:p-6 min-h-[342px]">
       {content}
     </div>
   );
@@ -128,10 +128,10 @@ function MobileCarousel({ cards }: { cards: CardEntry[] }) {
 
 export function CardGridSlider({ section }: { section: CardsSection }) {
   return (
-    <section className="bg-midnight py-12 lg:py-16">
+    <section className="bg-midnight py-12 lg:py-[32px]">
       <div className="mx-auto max-w-[1440px] px-6 lg:px-16">
         {section.heading && (
-          <h2 className="mb-8 text-[28px] font-bold text-white lg:mb-10 lg:text-[36px]">
+          <h2 className="text-[28px] font-bold text-white lg:text-[32px] my-8 lg:mt-[16px] lg:mb-[32px]">
             {section.heading}
           </h2>
         )}
