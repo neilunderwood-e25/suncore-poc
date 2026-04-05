@@ -1,4 +1,4 @@
-import type { Section } from "@/lib/sections/types";
+import type { Section } from "./types";
 import { sectionRegistry } from "./registry";
 
 type SectionsRendererProps = {

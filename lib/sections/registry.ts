@@ -1,5 +1,5 @@
-import type { SectionDefinition } from "@/lib/sections/config";
-import { heroesSection } from "./Heroes/Heroes.section";
+import type { SectionDefinition } from "./config";
+import { heroesSection } from "./definitions/heroes";
 
 /**
  * Central section registry.

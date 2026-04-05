@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a **Contentful-powered Next.js 16 (App Router)** site. Pages are composed of modular **sections** managed in Contentful and rendered dynamically via a registry-based component system.
+This project is a **Contentful-powered Next.js 16 (App Router)** site. Pages are composed of modular **sections** managed in Contentful and rendered dynamically via a registry-based component system with a **skeleton + hydrate** data fetching pattern.
 
 ---
 
@@ -11,12 +11,12 @@ This project is a **Contentful-powered Next.js 16 (App Router)** site. Pages are
 ```
 URL Request
   → App Router (/app/[locale]/[[...slug]]/page.tsx)
-  → resolveTemplate() determines template type
-  → TEMPLATE_RENDERERS[type]() fetches + renders page
-  → Contentful GraphQL: fetch page shell (section IDs + __typenames)
-  → enrichPageData(): fetch full data for each section individually
-  → FlexiblePageTemplate renders PageSchema + SectionsRenderer
-  → SectionsRenderer maps each section.__typename → sectionRegistry[typename]
+  → getFlexiblePageBySlug() fetches page skeleton from Contentful
+  → Skeleton query returns section stubs (__typename + sys.id only)
+  → hydrateSections() dispatches each stub to the registry
+  → Each section's hydrate() fetches its own full data in parallel
+  → hydrate() returns typed Section data directly (no adapter layer)
+  → SectionsRenderer maps section.type → registry render()
   → Section component dispatches to variant via frontEndComponent field
   → Final HTML rendered
 ```
@@ -29,93 +29,72 @@ URL Request
 
 ```
 app/
-├── layout.tsx                        # Root layout
+├── layout.tsx                        # Root layout (Noto Sans font)
+├── globals.css                       # Suncor design tokens + Tailwind theme
 ├── [locale]/
-│   ├── layout.tsx                    # Locale layout (header, footer, promo bar)
-│   ├── [[...slug]]/
-│   │   └── page.tsx                  # Catch-all FlexiblePage route
-│   ├── search/[[...q]]/page.tsx      # Search page
-│   └── ...
+│   ├── layout.tsx                    # Locale layout (next-intl provider)
+│   └── [[...slug]]/
+│       └── page.tsx                  # Catch-all FlexiblePage route
+├── api/
+│   ├── preview/route.ts             # Draft preview mode
+│   └── exit-preview/route.ts        # Disable preview
+└── not-found.tsx
 ```
 
 ### Route Resolution
 
-**File:** `lib/routing/routingResolver.ts`
+The catch-all route resolves URL segments to a Contentful slug:
 
-`resolveTemplate(slugSegments)` maps URL patterns to template types:
-
-| URL Pattern | Template Type |
+| URL Pattern | Resolved Slug |
 |---|---|
-| `/en/` | `FLEXIBLE` (slug = "/") |
-| `/en/features/pdf-signing` | `FLEXIBLE` (slug = "features/pdf-signing") |
-| `/en/blog/...` | `BLOG` |
-| `/en/customer-stories/...` | `CUSTOMER_STORIES` |
-| `/en/ask/...` | `ASK` |
-
-Most pages resolve to `TemplateType.FLEXIBLE`, which triggers the FlexiblePage pipeline.
+| `/en/` | `home` (from CONTENTFUL_HOME_SLUG env) |
+| `/en/about` | `about` |
+| `/en/features/overview` | `features/overview` |
 
 ---
 
 ## 2. FlexiblePage Content Model
 
-### Contentful Type
+### Contentful Content Type: `flexiblePage`
 
-**File:** `lib/contentful/domain/flexiblePage/flexiblePage.type.ts`
+Fields: `internalName`, `slug`, `pageTitle`, `sections` (Array of Entry links), SEO fields.
 
 ```typescript
 type FlexiblePage = {
   sys: { id: string };
   slug: string;
   pageTitle?: string | null;
-  sectionsCollection: {
-    items: Section[];
-  } | null;
-
-  // SEO
-  seoTitle?: string | null;
-  seoDescription?: string | null;
-  seoOgImage?: { sys?: { id: string } } | null;
-  seoSchemaMarkup?: Record<string, unknown> | Record<string, unknown>[] | null;
-  seoNoIndex?: boolean | null;
-
-  // JS injection hooks
-  jsInjectorHead?: string | null;
-  jsInjectorBodyStart?: string | null;
-  jsInjectorBodyEnd?: string | null;
-
-  // Taxonomy
-  contentfulMetadata?: PageContentfulMetadata | null;
+  sections: Section[];
 };
 ```
 
-A FlexiblePage is essentially a **slug + ordered list of sections + SEO metadata**.
+A FlexiblePage is a **slug + ordered list of sections + SEO metadata**.
 
 ---
 
-## 3. Two-Phase Data Fetching
+## 3. Two-Phase Data Fetching (Skeleton + Hydrate)
 
-**File:** `lib/contentful/domain/flexiblePage/flexiblePage.service.ts`
+**File:** `lib/contentful/pages.ts`
 
-Contentful GraphQL has query complexity limits. To work around this, section data is fetched in two phases:
+Contentful GraphQL has a query complexity limit of 11,000. To stay under this, section data is fetched in two phases:
 
-### Phase 1: Page Shell
+### Phase 1: Page Skeleton
 
 **Query:** `lib/contentful/graphql/queries/flexiblePage/flexiblePageQueries.ts`
 
-Fetches the FlexiblePage with only **section metadata** (no full content):
+Fetches the FlexiblePage with only section stubs (no content):
 
 ```graphql
-{
-  flexiblePageCollection(where: { slug: $slug }) {
+query FlexiblePageBySlug($slug: String!, $locale: String!, $preview: Boolean) {
+  flexiblePageCollection(where: { slug: $slug }, limit: 1) {
     items {
+      sys { id }
       slug
-      sectionsCollection {
+      pageTitle
+      sectionsCollection(limit: 20) {
         items {
-          sys { id }
           __typename
-          ... on Heroes { frontEndComponent }
-          ... on Cards { frontEndComponent }
-          # Only IDs, typenames, and variant selectors
+          sys { id }
         }
       }
     }
@@ -123,347 +102,363 @@ Fetches the FlexiblePage with only **section metadata** (no full content):
 }
 ```
 
-### Phase 2: Section Enrichment
+### Phase 2: Section Hydration
 
-`enrichPageData()` iterates each section and calls the appropriate fetcher by `__typename`:
+`hydrateSections()` iterates each stub and calls the matching section's `hydrate()` function from the registry **in parallel**:
 
-| __typename | Fetcher |
-|---|---|
-| `Heroes` | `getHeroById()` |
-| `Cards` | `getCardsWithHyperlinkById()` |
-| `Cta` | `getCtaEntryById()` |
-| `RichTextContainer` | `getRichTextContainerById()` |
-| `Testimonials` | `getTestimonialsById()` |
-| `Features` | `getFeaturesById()` |
-| `TrustBlock` | `getTrustBlockById()` |
-| `Accordion` | `getAccordionById()` |
-| `Banners` | `getBannersById()` |
-| `MetricsAndFacts` | `getMetricsAndFactsById()` |
-| ... | ~25 section types total |
+```typescript
+const results = await Promise.all(
+  stubs.map(async (stub) => {
+    const config = sectionRegistry.find(s => s.contentfulTypename === stub.__typename);
+    if (!config) return { id: stub.sys.id, type: "unknown", raw: stub };
+    return config.hydrate(stub.sys.id, options);
+  })
+);
+```
 
-Each fetcher makes its own GraphQL query to get the full section data with all nested references resolved.
+Each `hydrate()` function makes its own GraphQL query and returns a **fully typed Section** directly. There is no adapter layer.
+
+### Per-Section Sub-Hydration
+
+Some sections have nested hydration. For example, Heroes fetches a skeleton of slide IDs, then hydrates each slide in parallel:
+
+```
+Heroes hydrate(id)
+  → Heroes skeleton query (slide IDs only)
+  → Promise.all([
+      heroSlide(id: slide1)  → full slide data
+      heroSlide(id: slide2)  → full slide data
+      heroSlide(id: slide3)  → full slide data
+    ])
+  → returns typed HeroesSection
+```
 
 ---
 
 ## 4. Section Registry & Rendering
 
-### SectionsRenderer
+### Section Definition
 
-**File:** `lib/sections/renderer.tsx`
+**File:** `lib/sections/config.ts`
 
-Iterates through enriched sections and resolves each to a React component:
+Each section type exports a `SectionDefinition`:
 
 ```typescript
-validSections.map((section) => {
-  const Component = sectionRegistry[section.__typename];
-  return Component ? (
-    <Component
-      section={section}
-      pageTaxonomyConcepts={pageTaxonomyConcepts}
-      taxonomies={taxonomies}
-    />
-  ) : null;
-});
+type SectionDefinition = {
+  contentfulTypename: string;                          // e.g. "Heroes"
+  type: Section["type"];                               // e.g. "heroes"
+  hydrate: (id, options) => Promise<Section | null>;   // Fetch + return typed data
+  render: (section) => ReactNode;                      // Render the component
+};
 ```
 
 ### Section Registry
 
-**File:** `lib/registry/registry.tsx`
-
-Maps Contentful `__typename` → React component:
+**File:** `lib/sections/registry.ts`
 
 ```typescript
-const sectionRegistry: SectionRegistry = {
-  Heroes,              // Dispatcher → many variants
-  Cards,               // Dispatcher → many variants
-  RichTextContainer,   // Dispatcher → many variants
-  CtaSections,
-  HeroBanner,
-  FeatureGrid,
-  Card,
-  Testimonial,
-  Testimonials,
-  MiniBanner,
-  TrustBlock,
-  Accordion,
-  Features,
-  Tabs,
-  Lists,
-  MetricsAndFacts,
-  PricingRelatedBlocks: Pricing,
-  Embedded,
-  Banners,
-  PostTypes,
-  // ... 20+ entries
-};
+import { heroesSection } from "./definitions/heroes";
+
+export const sectionRegistry: SectionDefinition[] = [
+  heroesSection,
+  // Add new sections here
+];
 ```
 
-### Component Props Interface
+### SectionsRenderer
+
+**File:** `lib/sections/SectionsRenderer.tsx`
+
+Loops over typed `Section[]` and renders via the registry:
 
 ```typescript
-type SectionComponentProps = {
-  section: Section;                           // Full section data
-  pageTaxonomyConcepts?: TaxonomyConcept[];   // Page-level taxonomy
-  taxonomies?: TaxonomyConcept[];             // Global taxonomy list
-};
+sections.map((section) => {
+  const config = sectionRegistry.find(s => s.type === section.type);
+  if (!config) return null;
+  return <div key={section.id}>{config.render(section)}</div>;
+});
 ```
 
 ---
 
 ## 5. Dispatcher Pattern (frontEndComponent)
 
-Many Contentful content types support multiple UI variants via the `frontEndComponent` field. The top-level section component acts as a **dispatcher**.
+Section content types can have a `frontEndComponent` dropdown field that selects the UI variant. The section component acts as a **dispatcher** using if-statements.
 
 ### Example: Heroes Dispatcher
 
 **File:** `components/sections/Heroes/index.tsx`
 
 ```typescript
-export default function HeroesSection({ section }) {
+export function Heroes({ section }: HeroesProps) {
   const frontEndComponent = section.frontEndComponent;
 
-  if (frontEndComponent === "HeroesCustomerStories") return <CustomerStories />;
-  if (frontEndComponent === "HeroesStory")            return <Story />;
-  if (frontEndComponent === "HeroesBrand")             return <Brand />;
-  if (frontEndComponent === "HeroesMedia")             return <Media />;
-  if (frontEndComponent === "HeroesVideo")             return <Video />;
-  // ... 11+ variants
-  return <Form />;  // fallback
+  if (frontEndComponent === "homepage-hero") {
+    return <HeroCarousel slides={section.slides} />;
+  }
+
+  // default — simple static hero
+  return <section>...</section>;
 }
 ```
 
-### Example: Cards Dispatcher
+Each variant lives in its own subfolder under the section component:
 
-**File:** `components/sections/Cards/index.tsx`
+```
+components/sections/Heroes/
+├── index.tsx              # Dispatcher
+└── HomepageHero/          # "homepage-hero" variant
+    └── index.tsx          # HeroCarousel client component
 
-Maps `frontEndComponent` values like:
-- `BLOGS_FEATURED` → `<FeaturedPosts />`
-- `RELATED_BLOG_LIST` → `<RelatedBlogList />`
-- `CARDS` → `<UICardsSection />`
-- `CARDS_BRAND` → `<Brand />`
-- `COVER_CARDS` → `<CoverCards />`
-- 13+ total variants
+lib/sections/definitions/
+└── heroes.tsx             # Section definition (hydrate + render wiring)
+```
 
-### Example: RichTextContainer Dispatcher
-
-**File:** `components/sections/RichTextContainer/index.tsx`
-
-- `TYPOGRAPHY` → `<TypographySection />`
-- `DISCLAIMER` → `<DisclaimerSection />`
-- `LIST_CHECKED_COLUMN` → `<ListCheckedColumn />`
-- `LIST_CHECKED_NO_COLUMN` → `<ListCheckedNoColumn />`
+To add a new variant:
+1. Create a new folder (e.g. `Heroes/BrandHero/`)
+2. Add an if-statement in `Heroes/index.tsx`
+3. Add the option to the Contentful dropdown
 
 ---
 
-## 6. Section Types
+## 6. Content Types
+
+### Current Contentful Content Types
+
+| Content Type ID | Name | Description |
+|---|---|---|
+| `flexiblePage` | Flexible Page | Page container with slug, sections, SEO |
+| `heroes` | Heroes | Hero section with frontEndComponent dispatch + slides |
+| `heroSlide` | Hero Slide | Individual carousel slide (heading, description, background, CTA) |
+| `image` | Image | Responsive image with desktop/mobile variants |
+| `video` | Video | Responsive video with desktop/mobile variants, poster, autoplay/loop/muted |
+| `cta` | CTA | Button/link with 3 styles (Primary, Secondary, Outline) |
+
+### Section Types
 
 **File:** `lib/sections/types.ts`
 
-All sections extend `BaseSection`:
-
 ```typescript
-type BaseSection = {
-  __typename: string;
-  sys: { id: string };
-  frontEndComponent?: string | null;
-  // ... common fields
-};
+type Section = HeroesSection | UnknownSection;
 ```
 
-Union type:
+Key shared types: `ImageAsset`, `ImageEntry`, `VideoAsset`, `VideoEntry`, `CtaEntry`, `RichTextDocument`, `HeroSlide`, `HeroSlideBackground` (Image | Video union).
 
-```typescript
-type Section =
-  | HeroBannerSection
-  | BannersSection
-  | FeatureGridSection
-  | TestimonialSection
-  | TestimonialsSection
-  | FeaturesSection
-  | VideoSection
-  | CardsSection
-  | HeroesSection
-  | MetricsAndFactsSection
-  | TrustBlockSection
-  | PostTypesSection
-  | CTASection
-  | RichTextContainerSection
-  | EmbeddedSection
-  | BaseSection;
+---
+
+## 7. GraphQL Layer
+
+**Location:** `lib/contentful/graphql/`
+
+Fragments and queries are organized by content type, following the same pattern as the reference pandadoc project:
+
+```
+lib/contentful/graphql/
+├── fragments/
+│   ├── cta/ctaFragment.ts
+│   ├── heroes/heroesFragment.ts          # Skeleton fragment (slide IDs only)
+│   ├── heroSlide/heroSlideFragment.ts    # Full slide with background union
+│   ├── image/imageFragment.ts            # CommonImageFragment + ImageAssetFragment
+│   └── video/videoFragment.ts            # CommonVideoFragment + VideoAssetFragment
+└── queries/
+    ├── flexiblePage/flexiblePageQueries.ts   # Page skeleton + slugs
+    ├── heroes/heroesQueries.ts               # HeroesById (skeleton)
+    └── heroSlide/heroSlideQueries.ts         # HeroSlideById (full data)
 ```
 
-### Contentful Entry Typenames
+### Fragment Composition
 
-**File:** `lib/contentful/config/ENUM.ts`
+Fragments import shared dependencies:
 
-```typescript
-enum ContentfulEntryTypename {
-  ACCORDION = "Accordion",
-  BANNERS = "Banners",
-  CARDS = "Cards",
-  CTA = "Cta",
-  CTA_SECTIONS = "CtaSections",
-  HEROES = "Heroes",
-  HUBSPOT_FORM = "HubSpotForm",
-  RICH_TEXT_CONTAINER = "RichTextContainer",
-  IMAGE = "Image",
-  MINI_BANNER = "MiniBanner",
-  POST_TYPES = "PostTypes",
-  TESTIMONIALS = "Testimonials",
-  TRUST_BLOCK = "TrustBlock",
-  VIDEO = "Video",
-  MEDIA_BLOCK = "MediaBlock",
-  FEATURES = "Features",
-  LISTS = "Lists",
-  METRICS_AND_FACTS = "MetricsAndFacts",
-  TABS = "Tabs",
-  PRICING_RELATED_BLOCKS = "PricingRelatedBlocks",
-  EMBEDDED = "Embedded",
-  // ~24 total types
+```
+HeroSlideFragment
+├── CommonImageFragment (for background Image)
+│   └── ImageAssetFragment
+├── CommonVideoFragment (for background Video)
+│   └── VideoAssetFragment
+└── CtaFragment
+```
+
+The `background` field uses inline fragments for the polymorphic union:
+
+```graphql
+background {
+  __typename
+  ... on Image { ...CommonImageFragment }
+  ... on Video { ...CommonVideoFragment }
 }
 ```
 
 ---
 
-## 7. Folder Structure
+## 8. Common Components
+
+**Location:** `components/common/`
+
+Reusable components shared across all sections:
 
 ```
-components/sections/
-├── Accordion/
-│   └── index.tsx
-├── Banners/
-│   └── index.tsx
-├── Cards/                          # Dispatcher with 13+ variants
-│   ├── index.tsx                   # Dispatcher
-│   ├── Brand/
-│   ├── BrandTabs/
-│   ├── CoverCards/
-│   ├── FeaturedPosts/
-│   ├── ImageSlider/
-│   ├── RelatedBlogList/
-│   ├── RelatedCustomerStories/
-│   └── UICardsSection/
-├── Heroes/                         # Dispatcher with 11+ variants
-│   ├── index.tsx                   # Dispatcher
-│   ├── Brand/
-│   ├── CustomerStories/
-│   ├── Form/
-│   ├── Hero/
-│   ├── Media/
-│   └── Video/
-├── RichTextContainer/              # Dispatcher with 4 variants
-│   ├── index.tsx                   # Dispatcher
-│   ├── Disclaimer/
-│   ├── ListCheckedColumn/
-│   ├── ListCheckedNoColumn/
-│   └── Typography/
-├── Features/
-├── MetricsAndFacts/
-├── PostTypes/
-├── Pricing/
-├── Tabs/
-├── Testimonials/
-├── TrustBlock/
-└── ...
+components/common/
+├── Cta/
+│   └── index.tsx              # CTA button (Primary, Secondary, Outline)
+├── ResponsiveImage/
+│   └── index.tsx              # <picture> with desktop/mobile sources
+├── ResponsiveVideo/
+│   └── index.tsx              # <video> with desktop/mobile sources, autoplay/loop/muted
+└── RichText/
+    └── RichText.tsx           # Contentful rich text renderer (all blocks, marks, embeds)
 ```
 
----
+### CTA Styles
 
-## 8. Rich Text Rendering
-
-**File:** `components/common/RichText/RichText.tsx`
-
-Contentful Rich Text fields are AST documents rendered via `documentToReactComponents()` with custom node handlers.
-
-### Supported Embedded Entries in Rich Text
-
-Rich text can embed full section components inline:
-
-| Embedded __typename | Rendered As |
+| Type | Style |
 |---|---|
-| `Cta` | `<Cta />` |
-| `Image` | `<ImageBlock />` |
-| `Video` | `<VideoComponent />` |
-| `HubSpotForm` | `<HubSpotFormBlock />` |
-| `Accordion` | `<AccordionSection />` |
-| `Testimonials` | `<TestimonialsView />` |
-| `Cards` | `<Cards />` |
-| `Banners` | `<Banners />` |
-| `TrustBlock` | `<TrustBlockClient />` |
-| `RichTextContainer` | Recursive rendering |
+| Primary Button | `bg-midnight` dark blue fill, white text |
+| Secondary Button | `bg-gold` yellow fill, dark text |
+| Outline Button | Transparent with white border, inverts on hover |
 
-### Entry Hyperlinks
+### Rich Text Renderer
 
-Cross-page links resolve based on page type:
-- Blog pages → `/blog/{slug}`
-- Story pages → `/customer-stories/{slug}`
-- Flexible pages → `/{slug}`
-
-### Special Text Tokens
-
-- `{{ Rate:G2 }}` → Renders G2 star rating component
-- Newlines → `<br />` tags
+Uses `@contentful/rich-text-react-renderer` with support for:
+- All MARKS (bold, italic, underline, code, super/subscript, strikethrough)
+- All BLOCKS (headings, paragraphs, lists, blockquotes, tables, HR)
+- Embedded entries (Image, CTA) and embedded assets (images, videos)
+- Entry hyperlinks (resolves by slug)
+- Newline → `<br>` conversion
 
 ---
 
-## 9. Image Handling
+## 9. Design Tokens
 
-**File:** `components/common/Image/Image.tsx`
+**File:** `app/globals.css`
 
-Uses Contentful's Image API for responsive transforms:
+Suncor design tokens defined as CSS custom properties in `:root`, mapped to Tailwind via `@theme inline`:
 
-```
-baseUrl?w=1200&q=80&fm=webp    # WebP variant
-baseUrl?w=960&q=80&fm=avif     # AVIF variant
-```
+- **Brand colors:** midnight, gold, clover, sky, dusk, dusty-blue, moss, sand, slate, orange
+- **Greys:** darkest-grey, dark-grey, light-grey, lightest-grey
+- **Typography:** Noto Sans (300/400/600/700), fluid clamp() font sizes
+- **Radius:** `--radius-default: 0.375rem`
+- **Shadows:** depth-4 through depth-64
 
-Builds multi-format `srcset` with automatic size breakpoints.
+Usage: `bg-midnight`, `text-gold`, `border-clover-70`, `text-sm` (fluid), etc.
 
 ---
 
 ## 10. Internationalization
 
 - **Locale routing:** All pages under `/app/[locale]/`
-- **Contentful locales:** Content fetched in the requested locale
+- **Contentful locales:** Dynamically fetched from Contentful API
 - **next-intl:** Client-side i18n provider set in locale layout
-- **Header/footer:** Selected per locale + pathname pattern
+- **Content:** Fetched in the requested locale, falls back to default locale
 
 ---
 
-## 11. FlexiblePageTemplate
+## 11. Rendering Modes
 
-**File:** `components/templates/FlexiblePage/FlexiblePage.tsx`
+**File:** `lib/contentful/settings.ts`
 
-Orchestrates the full page render:
+| Mode | Behavior |
+|---|---|
+| `ssr` | No cache (`cache: "no-store"`) |
+| `isr` | Revalidate on interval (`next: { revalidate: N }`) |
+| `static` | Full cache (`cache: "force-cache"`) |
+
+Configured via `CONTENTFUL_RENDER_MODE` env var.
+
+---
+
+## 12. Adding a New Section
+
+To add a new section type (e.g. FeatureGrid):
+
+1. **Contentful:** Create the content type, add it to FlexiblePage's sections validation
+2. **Fragment:** Create `lib/contentful/graphql/fragments/featureGrid/featureGridFragment.ts`
+3. **Query:** Create `lib/contentful/graphql/queries/featureGrid/featureGridQueries.ts`
+4. **Type:** Add `FeatureGridSection` to `lib/sections/types.ts` and the `Section` union
+5. **Component:** Create `components/sections/FeatureGrid/index.tsx` (dispatcher if it has variants)
+6. **Definition:** Create `lib/sections/definitions/featureGrid.tsx` with `hydrate` + `render`
+7. **Registry:** Add one import to `lib/sections/registry.ts`
+
+The page skeleton query never changes. The hydrate function handles its own data fetching.
+
+---
+
+## 13. Project Structure
 
 ```
-FlexiblePageTemplate
-├── PageSchema          # SEO: structured data, canonical URL, OG tags
-├── ScriptManager       # JS injectors (head, body-start, body-end)
-└── SectionsRenderer    # Maps sections → components via registry
+app/
+├── layout.tsx                              # Root layout (Noto Sans font)
+├── globals.css                             # Suncor design tokens + Tailwind theme
+├── [locale]/
+│   ├── layout.tsx                          # Locale layout (next-intl)
+│   └── [[...slug]]/page.tsx               # Catch-all FlexiblePage route
+└── api/                                    # Preview mode endpoints
+
+lib/
+├── sections/                               # Section infrastructure
+│   ├── config.ts                           # SectionDefinition type
+│   ├── types.ts                            # All section + shared types
+│   ├── registry.ts                         # Central registry
+│   ├── SectionsRenderer.tsx                # Renders sections from registry
+│   ├── utils.ts                            # Shared utilities (resolveCtaHref)
+│   └── definitions/                        # Section definitions (hydrate + render wiring)
+│       └── heroes.tsx
+├── contentful/
+│   ├── client.ts                           # GraphQL client factory
+│   ├── pages.ts                            # Page fetching + hydration orchestration
+│   ├── settings.ts                         # Render mode config
+│   ├── locales.ts                          # Contentful locales API
+│   └── graphql/
+│       ├── fragments/                      # GraphQL fragments by content type
+│       │   ├── cta/ctaFragment.ts
+│       │   ├── heroes/heroesFragment.ts
+│       │   ├── heroSlide/heroSlideFragment.ts
+│       │   ├── image/imageFragment.ts
+│       │   └── video/videoFragment.ts
+│       └── queries/                        # GraphQL queries by content type
+│           ├── flexiblePage/flexiblePageQueries.ts
+│           ├── heroes/heroesQueries.ts
+│           └── heroSlide/heroSlideQueries.ts
+└── i18n/                                   # Internationalization
+
+components/
+├── sections/                               # Pure UI — section components only
+│   └── Heroes/
+│       ├── index.tsx                       # Dispatcher (reads frontEndComponent)
+│       └── HomepageHero/
+│           └── index.tsx                   # HeroCarousel client component
+└── common/                                 # Reusable common components
+    ├── Cta/index.tsx
+    ├── ResponsiveImage/index.tsx
+    ├── ResponsiveVideo/index.tsx
+    └── RichText/RichText.tsx
 ```
 
 ---
 
-## 12. Key File Reference
+## 14. Key File Reference
 
 | Concern | File |
 |---|---|
 | Page route handler | `app/[locale]/[[...slug]]/page.tsx` |
-| Locale layout | `app/[locale]/layout.tsx` |
-| Route resolver | `lib/routing/routingResolver.ts` |
-| Template renderers | `lib/templates/templateRenderers.tsx` |
-| FlexiblePage template | `components/templates/FlexiblePage/FlexiblePage.tsx` |
-| FlexiblePage type | `lib/contentful/domain/flexiblePage/flexiblePage.type.ts` |
-| FlexiblePage service | `lib/contentful/domain/flexiblePage/flexiblePage.service.ts` |
-| GraphQL queries | `lib/contentful/graphql/queries/flexiblePage/flexiblePageQueries.ts` |
+| Root layout | `app/layout.tsx` |
+| Design tokens | `app/globals.css` |
+| Page fetching + hydration | `lib/contentful/pages.ts` |
+| Section definition type | `lib/sections/config.ts` |
 | Section types | `lib/sections/types.ts` |
-| Sections renderer | `lib/sections/renderer.tsx` |
-| Section registry | `lib/registry/registry.tsx` |
-| Contentful enums | `lib/contentful/config/ENUM.ts` |
-| Contentful client | `lib/contentful/client/client.ts` |
+| Section utilities | `lib/sections/utils.ts` |
+| Section definitions | `lib/sections/definitions/` |
+| Section registry | `lib/sections/registry.ts` |
+| Sections renderer | `lib/sections/SectionsRenderer.tsx` |
+| Contentful client | `lib/contentful/client.ts` |
+| Render mode settings | `lib/contentful/settings.ts` |
+| GraphQL fragments | `lib/contentful/graphql/fragments/` |
+| GraphQL queries | `lib/contentful/graphql/queries/` |
 | Rich text renderer | `components/common/RichText/RichText.tsx` |
-| Image component | `components/common/Image/Image.tsx` |
+| CTA component | `components/common/Cta/index.tsx` |
+| Image component | `components/common/ResponsiveImage/index.tsx` |
+| Video component | `components/common/ResponsiveVideo/index.tsx` |
+| CSP + Next config | `next.config.ts` |
 
 ---
 
@@ -476,51 +471,47 @@ FlexiblePageTemplate
 └────────────────────────┬────────────────────────────────┘
                          │
                          ▼
-              ┌─────────────────────┐
-              │  resolveTemplate()  │
-              │  Route → Template   │
-              └─────────┬───────────┘
+              ┌─────────────────────────┐
+              │  getFlexiblePageBySlug() │
+              │  Phase 1: Skeleton query │
+              │  (__typename + sys.id)   │
+              └─────────┬───────────────┘
                         │
                         ▼
-              ┌─────────────────────┐
-              │  TEMPLATE_RENDERERS │
-              │  [FLEXIBLE]()       │
-              └─────────┬───────────┘
+              ┌─────────────────────────┐
+              │  hydrateSections()       │
+              │  Phase 2: Per-section    │
+              │  hydrate() in parallel   │
+              └─────────┬───────────────┘
                         │
-           ┌────────────┴────────────┐
-           ▼                         ▼
-   ┌──────────────┐        ┌──────────────────┐
-   │ Phase 1:     │        │ Phase 2:         │
-   │ GraphQL      │───────▶│ enrichPageData() │
-   │ Page Shell   │        │ Per-section fetch │
-   └──────────────┘        └────────┬─────────┘
-                                    │
-                                    ▼
-                     ┌──────────────────────────┐
-                     │  FlexiblePageTemplate     │
-                     │  ├── PageSchema (SEO)     │
-                     │  ├── ScriptManager (JS)   │
-                     │  └── SectionsRenderer     │
-                     └────────────┬──────────────┘
-                                  │
-                                  ▼
-                     ┌──────────────────────────┐
-                     │    sectionRegistry        │
-                     │  __typename → Component   │
-                     └────────────┬──────────────┘
-                                  │
-                    ┌─────────────┼─────────────┐
-                    ▼             ▼              ▼
-              ┌──────────┐ ┌──────────┐  ┌──────────┐
-              │ Heroes   │ │  Cards   │  │   CTA    │
-              │Dispatcher│ │Dispatcher│  │  Section │
-              └────┬─────┘ └────┬─────┘  └──────────┘
-                   │            │
-          frontEndComponent  frontEndComponent
-                   │            │
-              ┌────┴────┐  ┌───┴────┐
-              ▼         ▼  ▼        ▼
-           Brand    Video  Brand  Featured
-           Form     Media  Cover  BlogList
-           Hero     ...    Slider  ...
+           ┌────────────┼────────────┐
+           ▼            ▼            ▼
+    ┌────────────┐ ┌──────────┐ ┌──────────┐
+    │  Heroes    │ │ Feature  │ │  Cards   │
+    │  hydrate() │ │ Grid     │ │ hydrate()│
+    └─────┬──────┘ │ hydrate()│ └──────────┘
+          │        └──────────┘
+          ▼
+    ┌────────────────────────┐
+    │ Heroes sub-hydration   │
+    │ Skeleton → slide IDs   │
+    │ → heroSlide(id) x N    │
+    │   in parallel           │
+    └────────────────────────┘
+                        │
+                        ▼
+              ┌─────────────────────────┐
+              │  SectionsRenderer        │
+              │  section.type → render() │
+              └─────────┬───────────────┘
+                        │
+                        ▼
+              ┌─────────────────────────┐
+              │  Heroes dispatcher       │
+              │  frontEndComponent →     │
+              │  ├── "homepage-hero"     │
+              │  │   └── HeroCarousel   │
+              │  └── "default"          │
+              │      └── Static hero    │
+              └─────────────────────────┘
 ```

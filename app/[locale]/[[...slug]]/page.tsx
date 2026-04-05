@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 
 import { LanguageDropdown } from "@/components/LanguageDropdown";
-import { SectionsRenderer } from "@/components/sections/SectionsRenderer";
+import { SectionsRenderer } from "@/lib/sections/SectionsRenderer";
 import { getContentfulLocales } from "@/lib/contentful/locales";
 import {
   HOME_SLUG,

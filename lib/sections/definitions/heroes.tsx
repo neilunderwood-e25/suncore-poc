@@ -4,7 +4,7 @@ import { getContentfulClient } from "@/lib/contentful/client";
 import { renderMode } from "@/lib/contentful/settings";
 import { HEROES_BY_ID } from "@/lib/contentful/graphql/queries/heroes/heroesQueries";
 import { HERO_SLIDE_BY_ID } from "@/lib/contentful/graphql/queries/heroSlide/heroSlideQueries";
-import { Heroes } from "./index";
+import { Heroes } from "@/components/sections/Heroes";
 
 type HeroesSkeletonResponse = {
   heroes?: {

@@ -4,7 +4,7 @@ import {
   FLEXIBLE_PAGE_SLUGS,
 } from "./graphql/queries/flexiblePage/flexiblePageQueries";
 import { renderMode, type RenderMode } from "./settings";
-import { sectionRegistry } from "@/components/sections/registry";
+import { sectionRegistry } from "@/lib/sections/registry";
 import type { HydrateOptions } from "@/lib/sections/config";
 import type { Section, UnknownSection } from "@/lib/sections/types";
 
