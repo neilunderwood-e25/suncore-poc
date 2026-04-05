@@ -70,7 +70,7 @@ export function CardGrid({ section }: { section: CardsSection }) {
   return (
     <section className="bg-dusty-blue py-[32px]">
       {/* Container */}
-      <div className="mx-auto max-w-[1312px]">
+      <div className="mx-auto max-w-[1312px] px-[24px] lg:px-0">
         {/* Header */}
         <div className="max-w-[76rem]">
           {/* Lead-in */}
