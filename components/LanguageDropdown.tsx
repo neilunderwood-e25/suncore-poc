@@ -1,40 +1,32 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { startTransition } from "react";
-
-import { buildPathForLocale } from "@/lib/i18n/locale";
+import {
+  getLocaleConfigs,
+  buildPathForLocale,
+  type LocaleConfig,
+} from "@/lib/i18n/locale";
 
 type LanguageDropdownProps = {
-  locales: Array<{ code: string; name?: string }>;
-  defaultLocale: string;
   currentLocale: string;
   slugSegments: string[];
 };
 
 export const LanguageDropdown = ({
-  locales,
-  defaultLocale,
   currentLocale,
   slugSegments,
 }: LanguageDropdownProps) => {
   const router = useRouter();
+  const configs = getLocaleConfigs();
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const nextLocale = event.target.value;
-    const nextPath = buildPathForLocale(
-      nextLocale,
-      slugSegments,
-      defaultLocale
-    );
+    const nextPath = buildPathForLocale(nextLocale, slugSegments);
     startTransition(() => {
       router.push(nextPath);
     });
   };
-
-  if (!locales.length) {
-    return null;
-  }
 
   return (
     <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-zinc-500">
@@ -44,9 +36,9 @@ export const LanguageDropdown = ({
         value={currentLocale}
         onChange={handleChange}
       >
-        {locales.map((item) => (
-          <option key={item.code} value={item.code}>
-            {item.name ?? item.code.toUpperCase()}
+        {configs.map((config) => (
+          <option key={config.urlSlug} value={config.urlSlug}>
+            {config.displayName}
           </option>
         ))}
       </select>

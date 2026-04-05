@@ -1,10 +1,7 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
 
-import { LanguageDropdown } from "@/components/LanguageDropdown";
 import { SectionsRenderer } from "@/lib/sections/SectionsRenderer";
-import { getContentfulLocales } from "@/lib/contentful/locales";
 import {
   HOME_SLUG,
   getAllFlexiblePageSlugs,
@@ -12,7 +9,14 @@ import {
   normalizeSlugForPath,
 } from "@/lib/contentful/pages";
 import { DEFAULT_REVALIDATE_SECONDS, renderMode } from "@/lib/contentful/settings";
-import { buildPathForLocale } from "@/lib/i18n/locale";
+import {
+  toContentfulLocale,
+  toUrlLocale,
+  buildPathForLocale,
+  URL_LOCALES,
+  DEFAULT_URL_LOCALE,
+} from "@/lib/i18n/locale";
+import { getContentfulLocales } from "@/lib/contentful/locales";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -26,16 +30,11 @@ export const generateStaticParams = async () => {
   }
 
   try {
-    const cmsLocales = await getContentfulLocales();
-    const defaultLocale = cmsLocales.find((item) => item.default)?.code ?? "en";
-    const localeCodes = cmsLocales.length
-      ? cmsLocales.map((item) => item.code)
-      : [defaultLocale];
-
     const entries = await Promise.all(
-      localeCodes.map(async (locale) => {
+      URL_LOCALES.map(async (urlLocale) => {
+        const contentfulLocale = toContentfulLocale(urlLocale);
         try {
-          const slugs = await getAllFlexiblePageSlugs(locale, {
+          const slugs = await getAllFlexiblePageSlugs(contentfulLocale, {
             preview: false,
             revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
             mode: renderMode,
@@ -45,58 +44,52 @@ export const generateStaticParams = async () => {
             const normalized = normalizeSlugForPath(slug);
             const slugSegments =
               normalized === HOME_SLUG ? [] : normalized.split("/");
-            return { locale, slug: slugSegments };
+            return { locale: urlLocale, slug: slugSegments };
           });
         } catch (error) {
-          console.error(`Failed to generate static params for locale "${locale}":`, error);
+          console.error(`Failed to generate static params for locale "${urlLocale}":`, error);
           return [];
         }
       })
     );
 
     const flattened = entries.flat();
-    return flattened.length > 0 ? flattened : [{ locale: defaultLocale, slug: [] }];
+    return flattened.length > 0
+      ? flattened
+      : [{ locale: DEFAULT_URL_LOCALE, slug: [] }];
   } catch (error) {
     console.error("Failed to generate static params:", error);
-    return [{ locale: "en", slug: [] }];
+    return [{ locale: DEFAULT_URL_LOCALE, slug: [] }];
   }
 };
 
-// Revalidate for ISR mode
 export const revalidate = renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false;
 
 export const generateMetadata = async ({ params }: FlexiblePageParams) => {
   try {
-    const { locale: paramLocale, slug } = await params;
-    const cmsLocales = await getContentfulLocales();
-    const defaultLocale = cmsLocales.find((item) => item.default)?.code ?? "en";
-    const locale = paramLocale ?? (await getLocale());
+    const { locale: urlLocale, slug } = await params;
+    const contentfulLocale = toContentfulLocale(urlLocale);
+    const contentfulDefault = toContentfulLocale(DEFAULT_URL_LOCALE);
     const slugSegments = slug ?? [];
     const resolvedSlug = slugSegments.length ? slugSegments.join("/") : HOME_SLUG;
 
     let page = await getFlexiblePageBySlug(resolvedSlug, {
-      locale,
+      locale: contentfulLocale,
       preview: false,
-      revalidate:
-        renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
+      revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
       mode: renderMode,
     });
-    if (!page && locale !== defaultLocale) {
+    if (!page && contentfulLocale !== contentfulDefault) {
       page = await getFlexiblePageBySlug(resolvedSlug, {
-        locale: defaultLocale,
+        locale: contentfulDefault,
         preview: false,
-        revalidate:
-          renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
+        revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
         mode: renderMode,
       });
     }
 
     const title = page?.pageTitle ?? resolvedSlug;
-    const canonicalPath = buildPathForLocale(
-      locale,
-      slugSegments,
-      defaultLocale
-    );
+    const canonicalPath = buildPathForLocale(urlLocale, slugSegments);
 
     return {
       title,
@@ -106,17 +99,14 @@ export const generateMetadata = async ({ params }: FlexiblePageParams) => {
     };
   } catch (error) {
     console.error("Failed to generate metadata:", error);
-    return {
-      title: "Page",
-    };
+    return { title: "Page" };
   }
 };
 
 export default async function FlexiblePage({ params }: FlexiblePageParams) {
-  const { locale: paramLocale, slug } = await params;
-  const cmsLocales = await getContentfulLocales();
-  const defaultLocale = cmsLocales.find((item) => item.default)?.code ?? "en";
-  const locale = paramLocale ?? (await getLocale());
+  const { locale: urlLocale, slug } = await params;
+  const contentfulLocale = toContentfulLocale(urlLocale);
+  const contentfulDefault = toContentfulLocale(DEFAULT_URL_LOCALE);
   const slugSegments = slug ?? [];
 
   const preview =
@@ -126,15 +116,15 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
     : HOME_SLUG;
 
   let page = await getFlexiblePageBySlug(resolvedSlug, {
-    locale,
+    locale: contentfulLocale,
     preview,
     revalidate:
       renderMode === "isr" && !preview ? DEFAULT_REVALIDATE_SECONDS : false,
     mode: renderMode,
   });
-  if (!page && locale !== defaultLocale) {
+  if (!page && contentfulLocale !== contentfulDefault) {
     page = await getFlexiblePageBySlug(resolvedSlug, {
-      locale: defaultLocale,
+      locale: contentfulDefault,
       preview,
       revalidate:
         renderMode === "isr" && !preview ? DEFAULT_REVALIDATE_SECONDS : false,
