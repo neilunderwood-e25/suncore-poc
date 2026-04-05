@@ -137,8 +137,20 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
   }
 
   return (
-    <main>
-      <SectionsRenderer sections={page.sections} />
-    </main>
+    <>
+      {/* Header placeholder */}
+      <header>
+        <img src="/header.png" alt="" className="w-full" />
+      </header>
+
+      <main>
+        <SectionsRenderer sections={page.sections} />
+      </main>
+
+      {/* Footer placeholder */}
+      <footer>
+        <img src="/footer.png" alt="" className="w-full" />
+      </footer>
+    </>
   );
 }
