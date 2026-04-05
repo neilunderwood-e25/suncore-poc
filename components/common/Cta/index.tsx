@@ -5,7 +5,7 @@ const CTA_STYLES: Record<string, string> = {
   "Primary Button":
     "bg-midnight text-white hover:bg-midnight-95",
   "Secondary Button":
-    "bg-gold text-darkest-grey hover:bg-gold-95",
+    "bg-white border border-midnight text-midnight hover:border-dusk hover:bg-dusk hover:text-white",
   "Outline Button":
     "bg-transparent text-white border border-white hover:bg-white hover:text-midnight",
 };

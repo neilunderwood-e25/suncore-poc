@@ -22,7 +22,7 @@ function ChangeIndicator({ change }: { change: number }) {
         <path d="M5 0l5 10H0z" />
       </svg>
       {isPositive ? "+" : ""}
-      {change.toFixed(3)}
+      <span className="text-black font-normal text-[16px]">{change.toFixed(3)}</span>
     </span>
   );
 }
@@ -39,13 +39,13 @@ function StockRow({
   return (
     <div className="flex items-baseline gap-4">
       {/* Exchange label — fixed width for alignment */}
-      <span className="w-16 shrink-0 text-[13px] font-semibold tracking-wide text-slate-70 lg:w-auto">
+      <span className="w-16 shrink-0 font-sans text-[16px] font-500 text-black lg:w-auto">
         {exchange}
       </span>
 
       {/* Price */}
       {price != null && (
-        <span className="text-[32px] font-bold leading-none tracking-tight text-darkest-grey lg:text-[42px]">
+        <span className="font-sans text-[32px] font-500 leading-none tracking-tight text-darkest-grey">
           ${price.toFixed(3)}
         </span>
       )}
@@ -76,7 +76,7 @@ export function StockTicker({ section }: StockTickerProps) {
       <div className="hidden h-[9.25rem] items-center lg:flex">
         <div className="mx-auto flex w-full max-w-[1440px] items-center px-16">
           {section.companyName && (
-            <span className="shrink-0 text-[18px] font-bold leading-tight text-darkest-grey">
+            <span className="shrink-0 font-sans text-[24px] font-bold leading-tight text-darkest-grey">
               {section.companyName}
             </span>
           )}
@@ -89,14 +89,13 @@ export function StockTicker({ section }: StockTickerProps) {
 
           <div className="flex shrink-0 items-center gap-8">
             {section.delayDisclaimer && (
-              <span className="text-[14px] text-slate-70">
+              <span className="text-[16px] text-black">
                 {section.delayDisclaimer}
               </span>
             )}
             {section.cta && (
               <Cta
                 cta={section.cta}
-                className="!border-darkest-grey !text-darkest-grey !bg-transparent hover:!bg-darkest-grey hover:!text-white !text-[13px] !px-5 !py-2"
               />
             )}
           </div>
@@ -106,7 +105,7 @@ export function StockTicker({ section }: StockTickerProps) {
       {/* ── MOBILE ── */}
       <div className="flex flex-col items-center px-6 py-8 lg:hidden">
         {section.companyName && (
-          <span className="mb-6 text-[18px] font-bold text-darkest-grey">
+          <span className="mb-6 font-sans text-[24px] font-bold text-darkest-grey">
             {section.companyName}
           </span>
         )}
