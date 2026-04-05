@@ -15,13 +15,17 @@ export const metadata: Metadata = {
   description: "Contentful-driven, multi-language website",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale?: string }>;
 }>) {
+  const { locale } = await params;
+
   return (
-    <html lang="en">
+    <html lang={locale ?? "en-ca"} suppressHydrationWarning>
       <body className={`${notoSans.variable} antialiased`}>
         {children}
       </body>
