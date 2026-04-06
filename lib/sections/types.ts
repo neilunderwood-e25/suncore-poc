@@ -141,6 +141,34 @@ export type CardsSection = BaseSection & {
   cta?: CtaEntry | null;
 };
 
+/* ------------------------------------------------------------------ */
+/*  News Article types                                                 */
+/* ------------------------------------------------------------------ */
+
+export type NewsArticleCard = {
+  sys: { id: string };
+  title?: string | null;
+  slug?: string | null;
+  publishDate?: string | null;
+  summary?: string | null;
+  thumbnail?: ImageEntry | null;
+};
+
+export type NewsArticleFull = NewsArticleCard & {
+  heroImage?: ImageEntry | null;
+  body?: RichTextDocument | null;
+  seoMetaDescription?: string | null;
+};
+
+export type NewsAndStoriesSection = BaseSection & {
+  type: "newsAndStories";
+  frontEndComponent?: string | null;
+  heading?: string | null;
+  subtitle?: string | null;
+  articles: NewsArticleCard[];
+  cta?: CtaEntry | null;
+};
+
 export type UnknownSection = BaseSection & {
   type: "unknown";
   raw: unknown;
@@ -150,4 +178,9 @@ export type UnknownSection = BaseSection & {
 /*  Union — extend this as you add new section types                   */
 /* ------------------------------------------------------------------ */
 
-export type Section = HeroesSection | StockTickerSection | CardsSection | UnknownSection;
+export type Section =
+  | HeroesSection
+  | StockTickerSection
+  | CardsSection
+  | NewsAndStoriesSection
+  | UnknownSection;

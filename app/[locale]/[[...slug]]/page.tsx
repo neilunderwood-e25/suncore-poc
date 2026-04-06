@@ -1,22 +1,25 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 
-import { SectionsRenderer } from "@/lib/sections/SectionsRenderer";
 import {
   HOME_SLUG,
   getAllFlexiblePageSlugs,
-  getFlexiblePageBySlug,
-  normalizeSlugForPath,
 } from "@/lib/contentful/pages";
 import { DEFAULT_REVALIDATE_SECONDS, renderMode } from "@/lib/contentful/settings";
 import {
   toContentfulLocale,
-  toUrlLocale,
   buildPathForLocale,
   URL_LOCALES,
   DEFAULT_URL_LOCALE,
 } from "@/lib/i18n/locale";
-import { getContentfulLocales } from "@/lib/contentful/locales";
+import { resolveTemplate, TemplateType } from "@/lib/routing/routingResolver";
+import {
+  TEMPLATE_RENDERERS,
+  TEMPLATE_METADATA_FETCHERS,
+  type TemplateContext,
+} from "@/lib/templates/templateRenderers";
+import { getAllNewsArticleSlugs } from "@/lib/contentful/domain/newsArticle/newsArticle.service";
+import { RoutePrefix } from "@/lib/routing/routingResolver";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -35,23 +38,44 @@ export const generateStaticParams = async () => {
     const entries = await Promise.all(
       URL_LOCALES.map(async (urlLocale) => {
         const contentfulLocale = toContentfulLocale(urlLocale);
+        const params: Array<{ locale: string; slug: string[] }> = [];
+
         try {
+          // FlexiblePage slugs
           const slugs = await getAllFlexiblePageSlugs(contentfulLocale, {
             preview: false,
             revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
             mode: renderMode,
           });
 
-          return slugs.map((slug) => {
-            const normalized = normalizeSlugForPath(slug);
+          for (const slug of slugs) {
+            const normalized = slug.replace(/^\/+|\/+$/g, "");
             const slugSegments =
               normalized === HOME_SLUG ? [] : normalized.split("/");
-            return { locale: urlLocale, slug: slugSegments };
+            params.push({ locale: urlLocale, slug: slugSegments });
+          }
+
+          // NewsArticle slugs
+          const articleSlugs = await getAllNewsArticleSlugs(contentfulLocale, {
+            preview: false,
+            revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
+            mode: renderMode,
           });
+
+          for (const articleSlug of articleSlugs) {
+            params.push({
+              locale: urlLocale,
+              slug: [RoutePrefix.NEWS_AND_STORIES, articleSlug],
+            });
+          }
         } catch (error) {
-          console.error(`Failed to generate static params for locale "${urlLocale}":`, error);
-          return [];
+          console.error(
+            `Failed to generate static params for locale "${urlLocale}":`,
+            error
+          );
         }
+
+        return params;
       })
     );
 
@@ -69,30 +93,40 @@ export const generateMetadata = async ({ params }: FlexiblePageParams) => {
   try {
     const { locale: urlLocale, slug } = await params;
     const contentfulLocale = toContentfulLocale(urlLocale);
-    const contentfulDefault = toContentfulLocale(DEFAULT_URL_LOCALE);
     const slugSegments = slug ?? [];
-    const resolvedSlug = slugSegments.length ? slugSegments.join("/") : HOME_SLUG;
+    const match = resolveTemplate(slugSegments);
 
-    let page = await getFlexiblePageBySlug(resolvedSlug, {
+    const ctx: TemplateContext = {
       locale: contentfulLocale,
       preview: false,
       revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
       mode: renderMode,
-    });
-    if (!page && contentfulLocale !== contentfulDefault) {
-      page = await getFlexiblePageBySlug(resolvedSlug, {
-        locale: contentfulDefault,
-        preview: false,
-        revalidate: renderMode === "isr" ? DEFAULT_REVALIDATE_SECONDS : false,
-        mode: renderMode,
-      });
+    };
+
+    // Try template-specific metadata first
+    const metadataFetcher = TEMPLATE_METADATA_FETCHERS[match.type];
+    if (metadataFetcher) {
+      const meta = await metadataFetcher(match, ctx);
+      if (meta) {
+        const canonicalPath = buildPathForLocale(urlLocale, slugSegments);
+        return {
+          title: meta.title,
+          description: meta.description ?? undefined,
+          alternates: {
+            canonical: new URL(canonicalPath, siteUrl).toString(),
+          },
+        };
+      }
     }
 
-    const title = page?.pageTitle ?? resolvedSlug;
+    // Fallback: use slug as title
+    const resolvedSlug = slugSegments.length
+      ? slugSegments.join("/")
+      : HOME_SLUG;
     const canonicalPath = buildPathForLocale(urlLocale, slugSegments);
 
     return {
-      title,
+      title: resolvedSlug,
       alternates: {
         canonical: new URL(canonicalPath, siteUrl).toString(),
       },
@@ -111,28 +145,29 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
 
   const preview =
     renderMode === "static" ? false : (await draftMode()).isEnabled;
-  const resolvedSlug = slugSegments.length
-    ? slugSegments.join("/")
-    : HOME_SLUG;
 
-  let page = await getFlexiblePageBySlug(resolvedSlug, {
+  const match = resolveTemplate(slugSegments);
+
+  const ctx: TemplateContext = {
     locale: contentfulLocale,
     preview,
     revalidate:
       renderMode === "isr" && !preview ? DEFAULT_REVALIDATE_SECONDS : false,
     mode: renderMode,
-  });
-  if (!page && contentfulLocale !== contentfulDefault) {
-    page = await getFlexiblePageBySlug(resolvedSlug, {
+  };
+
+  // Render using the matched template
+  let content = await TEMPLATE_RENDERERS[match.type](match, ctx);
+
+  // For FLEXIBLE pages, try the default locale as fallback
+  if (!content && match.type === TemplateType.FLEXIBLE && contentfulLocale !== contentfulDefault) {
+    content = await TEMPLATE_RENDERERS[match.type](match, {
+      ...ctx,
       locale: contentfulDefault,
-      preview,
-      revalidate:
-        renderMode === "isr" && !preview ? DEFAULT_REVALIDATE_SECONDS : false,
-      mode: renderMode,
     });
   }
 
-  if (!page) {
+  if (!content) {
     notFound();
   }
 
@@ -143,9 +178,7 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
         <img src="/header.png" alt="" className="w-full" />
       </header>
 
-      <main>
-        <SectionsRenderer sections={page.sections} />
-      </main>
+      <main>{content}</main>
 
       {/* Footer placeholder */}
       <footer>
