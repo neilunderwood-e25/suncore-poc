@@ -193,11 +193,11 @@ export default async function FlexiblePage({ params }: FlexiblePageParams) {
   return (
     <>
       {/* Header placeholder */}
-      <header>
+      <header className="sticky top-0 z-[100] w-full">
         <img src="/header.png" alt="" className="w-full" />
       </header>
 
-      <main>{content}</main>
+      <main className="relative z-0">{content}</main>
 
       {/* Footer placeholder */}
       <footer>

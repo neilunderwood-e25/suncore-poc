@@ -28,7 +28,7 @@ export function DesktopHero({
   return (
     <section
       className="relative w-full overflow-hidden bg-darkest-grey"
-      style={{ height: "calc(100vh - 9.25rem)", minHeight: 500 }}
+      style={{ height: "calc(100vh)", minHeight: 500 }}
     >
       {/* Background media */}
       {slides.map((slide, i) => (

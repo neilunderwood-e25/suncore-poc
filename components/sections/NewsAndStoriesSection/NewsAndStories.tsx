@@ -13,9 +13,12 @@ export function NewsAndStories({ section }: NewsAndStoriesProps) {
   const restRows = section.articles.slice(2);
 
   return (
-    // <></>
-    <section className="bg-midnight py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section className="relative py-16">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[80%] bg-midnight"
+        aria-hidden
+      />
+      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         {section.heading && (
           <div className="mt-[16px] mb-[32px]">

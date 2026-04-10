@@ -1,67 +1,102 @@
-import type { ImageEntry } from "@/lib/sections/types";
+import type { Document } from "@contentful/rich-text-types";
+import type { ImageEntry, RichTextDocument } from "@/lib/sections/types";
+import { ResponsiveImage } from "@/components/common/ResponsiveImage";
+import { RichTextRenderer } from "@/components/common/RichText/RichText";
 
 type ArticleHeroProps = {
   title?: string | null;
   publishDate?: string | null;
   heroImage?: ImageEntry | null;
+  intro?: RichTextDocument | null;
 };
 
-function formatDate(dateString: string): string {
+function formatArticleDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return date
+    .toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
+    .toUpperCase();
 }
 
-export function ArticleHero({ title, publishDate, heroImage }: ArticleHeroProps) {
-  const imageUrl = heroImage?.desktop?.url ?? heroImage?.mobile?.url;
+function ArticleHeroImage({ image, title }: { image: ImageEntry; title?: string | null }) {
+  if (image.desktop?.url) {
+    return (
+      <ResponsiveImage
+        image={image}
+        className="h-auto w-full object-cover"
+      />
+    );
+  }
+  const url = image.mobile?.url;
+  if (!url) return null;
+  return (
+    <img
+      src={url}
+      alt={image.altText ?? title ?? ""}
+      width={image.mobile?.width ?? undefined}
+      height={image.mobile?.height ?? undefined}
+      className="h-auto w-full object-cover"
+    />
+  );
+}
+
+export function ArticleHero({
+  title,
+  publishDate,
+  heroImage,
+  intro,
+}: ArticleHeroProps) {
+  const hasImage = Boolean(
+    heroImage?.desktop?.url ?? heroImage?.mobile?.url
+  );
 
   return (
-    <div className="relative">
-      {/* Hero image with dark overlay */}
-      {imageUrl && (
-        <div className="relative h-[400px] w-full md:h-[500px]">
-          <img
-            src={imageUrl}
-            alt={heroImage?.altText ?? title ?? ""}
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
-      )}
-
-      {/* Date + Title overlay */}
+    <section className="relative bg-white">
       <div
-        className={
-          imageUrl
-            ? "absolute inset-0 flex flex-col justify-end px-6 pb-12 md:px-16"
-            : "px-6 py-12 md:px-16"
-        }
-      >
-        <div className="mx-auto w-full max-w-3xl">
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[70%] bg-midnight"
+        aria-hidden
+      />
+
+      <div className="relative z-10">
+        <div className="article-container pt-12 pb-4 lg:pt-16">
           {publishDate && (
             <time
               dateTime={publishDate}
-              className={`text-xs font-semibold uppercase tracking-wider ${
-                imageUrl ? "text-white/80" : "text-gray-500"
-              }`}
+              className="block text-left text-xs font-semibold tracking-[0.12em] text-white"
             >
-              {formatDate(publishDate)}
+              {formatArticleDate(publishDate)}
             </time>
           )}
           {title && (
-            <h1
-              className={`mt-3 text-3xl font-bold leading-tight md:text-4xl ${
-                imageUrl ? "text-white" : "text-darkest-grey"
-              }`}
-            >
+            <h1 className="mt-6 text-center text-[28px] font-bold leading-snug text-white sm:text-3xl lg:mt-8 lg:text-[40px] lg:leading-tight">
               {title}
             </h1>
           )}
         </div>
+
+        {hasImage && heroImage && (
+          <div className="article-container relative z-20 mt-8 lg:mt-10">
+            <div className="overflow-hidden shadow-[0_24px_48px_-12px_rgba(0,0,0,0.25)]">
+              <ArticleHeroImage image={heroImage} title={title} />
+            </div>
+          </div>
+        )}
+
+        {intro != null && intro.json != null ? (
+          <div className="relative z-10 bg-white pt-10 pb-2 lg:pt-12">
+            <div className="article-container text-center">
+              <RichTextRenderer
+                document={intro.json as Document}
+                links={intro.links}
+                className="text-lg font-semibold leading-relaxed text-darkest-grey [&_p]:mb-0 [&_a]:text-dusty-blue [&_a]:underline-offset-2"
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
-    </div>
+    </section>
   );
 }

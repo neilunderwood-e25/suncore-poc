@@ -1,6 +1,7 @@
 import type { NewsArticleFull } from "@/lib/sections/types";
-import { ArticleHero } from "./ArticleHero";
 import { ArticleBody } from "./ArticleBody";
+import { ArticleHero } from "./ArticleHero";
+import { splitFirstParagraph } from "./splitArticleIntro";
 
 type NewsArticleDetailTemplateProps = {
   article: NewsArticleFull;
@@ -9,14 +10,17 @@ type NewsArticleDetailTemplateProps = {
 export function NewsArticleDetailTemplate({
   article,
 }: NewsArticleDetailTemplateProps) {
+  const split = article.body ? splitFirstParagraph(article.body) : null;
+
   return (
-    <article>
+    <article className="bg-white">
       <ArticleHero
         title={article.title}
         publishDate={article.publishDate}
         heroImage={article.heroImage}
+        intro={split?.intro ?? null}
       />
-      <ArticleBody body={article.body} />
+      <ArticleBody body={split?.rest ?? null} />
     </article>
   );
 }

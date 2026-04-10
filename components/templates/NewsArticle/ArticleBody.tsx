@@ -10,12 +10,14 @@ export function ArticleBody({ body }: ArticleBodyProps) {
   if (!body?.json) return null;
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12 md:px-16">
-      <RichTextRenderer
-        document={body.json as Document}
-        links={body.links}
-        className="prose prose-lg max-w-none"
-      />
+    <div className="article-container bg-white pb-16 pt-8 lg:pb-20">
+      <div className="article-body-container">
+        <RichTextRenderer
+          document={body.json as Document}
+          links={body.links}
+          className="prose prose-lg max-w-none text-darkest-grey prose-headings:text-darkest-grey"
+        />
+      </div>
     </div>
   );
 }
