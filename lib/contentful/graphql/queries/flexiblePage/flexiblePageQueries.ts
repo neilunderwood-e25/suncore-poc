@@ -1,8 +1,12 @@
+import { SEO_FRAGMENT } from "../../fragments/seo/seoFragment";
+
 /**
  * Skeleton query — fetches only __typename + sys.id for each section.
  * Full section data is hydrated per-section in parallel via the registry.
  */
 export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
+  ${SEO_FRAGMENT}
+
   query FlexiblePageBySlug($slug: String!, $locale: String!, $preview: Boolean) {
     flexiblePageCollection(
       where: { slug: $slug }
@@ -16,6 +20,9 @@ export const FLEXIBLE_PAGE_BY_SLUG = /* GraphQL */ `
         }
         slug
         pageTitle
+        seo {
+          ...SeoFields
+        }
         sectionsCollection(limit: 20) {
           items {
             __typename

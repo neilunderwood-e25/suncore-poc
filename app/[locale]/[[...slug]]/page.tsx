@@ -109,12 +109,31 @@ export const generateMetadata = async ({ params }: FlexiblePageParams) => {
       const meta = await metadataFetcher(match, ctx);
       if (meta) {
         const canonicalPath = buildPathForLocale(urlLocale, slugSegments);
+        const seo = meta.seo;
+        const canonical = seo?.seoCanonicalUrl ?? new URL(canonicalPath, siteUrl).toString();
+
         return {
           title: meta.title,
           description: meta.description ?? undefined,
-          alternates: {
-            canonical: new URL(canonicalPath, siteUrl).toString(),
-          },
+          alternates: { canonical },
+          openGraph: seo?.seoOgImage?.url
+            ? {
+                images: [
+                  {
+                    url: seo.seoOgImage.url,
+                    width: seo.seoOgImage.width ?? undefined,
+                    height: seo.seoOgImage.height ?? undefined,
+                  },
+                ],
+              }
+            : undefined,
+          robots:
+            seo?.seoNoIndex || seo?.seoNoFollow
+              ? {
+                  index: !seo.seoNoIndex,
+                  follow: !seo.seoNoFollow,
+                }
+              : undefined,
         };
       }
     }

@@ -1,4 +1,5 @@
 import { COMMON_IMAGE_FRAGMENT } from "../image/imageFragment";
+import { SEO_FRAGMENT } from "../seo/seoFragment";
 
 /** Full fragment for the article detail page. */
 export const NEWS_ARTICLE_FULL_FRAGMENT = /* GraphQL */ `
@@ -39,8 +40,11 @@ export const NEWS_ARTICLE_FULL_FRAGMENT = /* GraphQL */ `
     thumbnail {
       ...CommonImageFragment
     }
-    summary
-    seoMetaDescription
+    category
+    seo {
+      ...SeoFields
+    }
   }
   ${COMMON_IMAGE_FRAGMENT}
+  ${SEO_FRAGMENT}
 `;

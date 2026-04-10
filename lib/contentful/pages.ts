@@ -6,7 +6,7 @@ import {
 import { renderMode, type RenderMode } from "./settings";
 import { sectionRegistry } from "@/lib/sections/registry";
 import type { HydrateOptions } from "@/lib/sections/config";
-import type { Section, UnknownSection } from "@/lib/sections/types";
+import type { Section, UnknownSection, SeoEntry } from "@/lib/sections/types";
 
 export const HOME_SLUG = process.env.CONTENTFUL_HOME_SLUG ?? "home";
 
@@ -23,6 +23,7 @@ export type FlexiblePage = {
   sys: { id: string };
   slug: string;
   pageTitle?: string | null;
+  seo?: SeoEntry | null;
   sections: Section[];
 };
 
@@ -32,6 +33,7 @@ type FlexiblePageBySlugResponse = {
       sys: { id: string };
       slug: string;
       pageTitle?: string | null;
+      seo?: SeoEntry | null;
       sectionsCollection?: {
         items?: Array<SectionStub | null> | null;
       } | null;
@@ -139,6 +141,7 @@ export const getFlexiblePageBySlug = async (
     sys: page.sys,
     slug: page.slug,
     pageTitle: page.pageTitle ?? null,
+    seo: page.seo ?? null,
     sections,
   } satisfies FlexiblePage;
 };

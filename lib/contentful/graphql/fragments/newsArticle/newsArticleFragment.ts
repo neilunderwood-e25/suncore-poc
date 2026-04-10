@@ -7,7 +7,7 @@ export const NEWS_ARTICLE_CARD_FRAGMENT = /* GraphQL */ `
     title
     slug
     publishDate
-    summary
+    category
     thumbnail {
       ...CommonImageFragment
     }

@@ -2,6 +2,17 @@
 /*  Shared primitives — used across multiple section types            */
 /* ------------------------------------------------------------------ */
 
+export type SeoEntry = {
+  sys: { id: string };
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  seoOgImage?: ImageAsset | null;
+  seoNoIndex?: boolean | null;
+  seoNoFollow?: boolean | null;
+  seoCanonicalUrl?: string | null;
+  seoSchemaMarkup?: unknown | null;
+};
+
 export type ImageAsset = {
   url: string | null;
   width?: number | null;
@@ -150,14 +161,14 @@ export type NewsArticleCard = {
   title?: string | null;
   slug?: string | null;
   publishDate?: string | null;
-  summary?: string | null;
+  category?: string | null;
   thumbnail?: ImageEntry | null;
 };
 
 export type NewsArticleFull = NewsArticleCard & {
   heroImage?: ImageEntry | null;
   body?: RichTextDocument | null;
-  seoMetaDescription?: string | null;
+  seo?: SeoEntry | null;
 };
 
 export type NewsAndStoriesSection = BaseSection & {

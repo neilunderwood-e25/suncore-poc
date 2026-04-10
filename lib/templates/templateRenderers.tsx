@@ -6,6 +6,7 @@ import { getFlexiblePageBySlug } from "@/lib/contentful/pages";
 import { getNewsArticleBySlug } from "@/lib/contentful/domain/newsArticle/newsArticle.service";
 import { SectionsRenderer } from "@/lib/sections/SectionsRenderer";
 import { NewsArticleDetailTemplate } from "@/components/templates/NewsArticle/NewsArticleDetailTemplate";
+import type { SeoEntry } from "@/lib/sections/types";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -30,6 +31,7 @@ type TemplateRenderer = (
 export type TemplateMetadata = {
   title: string;
   description?: string | null;
+  seo?: SeoEntry | null;
 };
 
 type MetadataFetcher = (
@@ -40,6 +42,20 @@ type MetadataFetcher = (
 export const TEMPLATE_METADATA_FETCHERS: Partial<
   Record<TemplateType, MetadataFetcher>
 > = {
+  [TemplateType.FLEXIBLE]: async (match, ctx) => {
+    const page = await getFlexiblePageBySlug(match.slug, {
+      locale: ctx.locale,
+      preview: ctx.preview,
+      revalidate: ctx.revalidate,
+      mode: ctx.mode,
+    });
+    if (!page) return null;
+    return {
+      title: page.seo?.seoTitle ?? page.pageTitle ?? match.slug,
+      description: page.seo?.seoDescription ?? undefined,
+      seo: page.seo ?? null,
+    };
+  },
   [TemplateType.NEWS_ARTICLE_DETAIL]: async (match, ctx) => {
     const article = await getNewsArticleBySlug(match.slug, {
       locale: ctx.locale,
@@ -49,8 +65,9 @@ export const TEMPLATE_METADATA_FETCHERS: Partial<
     });
     if (!article) return null;
     return {
-      title: article.title ?? match.slug,
-      description: article.seoMetaDescription ?? article.summary,
+      title: article.seo?.seoTitle ?? article.title ?? match.slug,
+      description: article.seo?.seoDescription ?? undefined,
+      seo: article.seo ?? null,
     };
   },
 };
