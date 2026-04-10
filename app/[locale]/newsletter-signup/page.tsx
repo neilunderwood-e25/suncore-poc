@@ -21,7 +21,7 @@ export default function NewsletterSignupPage() {
               {/* Suncor logo */}
               <div className="mb-8">
                 <img
-                  src="/suncor-logo.svg"
+                  src="/assets/Suncor-logo.jpg"
                   alt="Suncor"
                   className="h-12"
                 />
