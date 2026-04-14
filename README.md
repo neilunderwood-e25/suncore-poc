@@ -1,3 +1,5 @@
+> **Note:** For development environment access and credentials (`.env.local`), please contact **nadun.u@eight25media.com**.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
