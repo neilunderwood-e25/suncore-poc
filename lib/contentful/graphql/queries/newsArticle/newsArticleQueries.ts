@@ -26,7 +26,7 @@ export const LATEST_NEWS_ARTICLES = /* GraphQL */ `
   query LatestNewsArticles(
     $locale: String!
     $preview: Boolean
-    $limit: Int = 6
+    $limit: Int = 5
   ) {
     newsArticleCollection(
       locale: $locale

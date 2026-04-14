@@ -55,7 +55,7 @@ export const newsAndStoriesSection: SectionDefinition = {
       if (section.displayMode === "latest") {
         // Dynamic mode — fetch latest articles
         articles = await getLatestNewsArticles(
-          section.limit ?? 6,
+          section.limit ?? 5,
           {
             locale: options.locale,
             preview: options.preview,

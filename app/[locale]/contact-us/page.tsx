@@ -1,12 +1,12 @@
-import { NewsletterSignupForm } from "@/components/sections/NewsletterSignup/NewsletterSignupForm";
+import { ContactForm } from "@/components/templates/ContactForm/ContactForm";
 
 export const metadata = {
-  title: "Sign up for Suncor Energy Inc. Press Releases",
+  title: "Contact Us | Suncor Energy",
   description:
-    "Subscribe to receive press releases for Suncor Energy Inc. via email.",
+    "Get in touch with Suncor Energy. Fill out the form below and our team will respond shortly.",
 };
 
-export default function NewsletterSignupPage() {
+export default function ContactUsPage() {
   return (
     <>
       {/* Header placeholder */}
@@ -17,7 +17,7 @@ export default function NewsletterSignupPage() {
       <main className="relative z-0">
         <section className="py-12 md:py-16">
           <div className="article-container">
-            <div className="mx-auto max-w-xl">
+            <div className="mx-auto max-w-2xl">
               {/* Suncor logo */}
               <div className="mb-8">
                 <img
@@ -29,20 +29,18 @@ export default function NewsletterSignupPage() {
 
               {/* Heading */}
               <h1 className="mb-4 text-2xl font-bold leading-tight text-midnight md:text-3xl">
-                Sign up for Suncor Energy Inc. press releases
+                Contact Us
               </h1>
 
               {/* Description */}
               <p className="mb-8 text-sm leading-relaxed text-dark-grey-70">
-                Complete and submit the form below to sign up and receive press
-                releases for Suncor Energy Inc. via email. You can return to
-                this form at any time and unsubscribe from this list, or by
-                clicking on the unsubscribe options at the bottom of press
-                release emails.
+                Have a question, feedback, or business inquiry? Fill out the form
+                below and a member of our team will get back to you as soon as
+                possible.
               </p>
 
               {/* Form */}
-              <NewsletterSignupForm />
+              <ContactForm />
             </div>
           </div>
         </section>
