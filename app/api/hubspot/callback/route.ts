@@ -20,7 +20,8 @@ export async function GET(request: Request) {
 
   const clientId = process.env.HUBSPOT_CLIENT_ID;
   const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
-  const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/api/hubspot/callback`;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
+  const redirectUri = `${siteUrl}/api/hubspot/callback`;
 
   if (!clientId || !clientSecret) {
     return NextResponse.json(
