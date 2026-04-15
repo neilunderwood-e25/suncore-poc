@@ -72,6 +72,7 @@ export type RichTextAsset = {
 export type RichTextLinks = {
   assets?: {
     block?: Array<RichTextAsset | null>;
+    hyperlink?: Array<RichTextAsset | null>;
   };
   entries?: {
     block?: Array<{ __typename: string; sys: { id: string }; [key: string]: unknown } | null>;
@@ -181,28 +182,13 @@ export type NewsAndStoriesSection = BaseSection & {
 };
 
 /* ------------------------------------------------------------------ */
-/*  News Release types                                                 */
+/*  News Releases Table types                                          */
 /* ------------------------------------------------------------------ */
 
-export type NewsRelease = {
-  sys: { id: string };
+export type NewsReleasesTableSection = BaseSection & {
+  type: "newsReleasesTable";
   title?: string | null;
-  releaseDate?: string | null;
-  pdfDocument?: {
-    url: string | null;
-    title?: string | null;
-    fileName?: string | null;
-    size?: number | null;
-    contentType?: string | null;
-  } | null;
-  externalUrl?: string | null;
-  pageCount?: number | null;
-};
-
-export type NewsReleasesListingSection = BaseSection & {
-  type: "newsReleasesListing";
-  heading?: string | null;
-  releases: NewsRelease[];
+  body?: RichTextDocument | null;
 };
 
 export type UnknownSection = BaseSection & {
@@ -219,5 +205,5 @@ export type Section =
   | StockTickerSection
   | CardsSection
   | NewsAndStoriesSection
-  | NewsReleasesListingSection
+  | NewsReleasesTableSection
   | UnknownSection;

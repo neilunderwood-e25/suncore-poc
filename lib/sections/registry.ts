@@ -3,7 +3,7 @@ import { heroesSection } from "./definitions/heroes";
 import { stockTickerSection } from "./definitions/stockTicker";
 import { cardsSection } from "./definitions/cards";
 import { newsAndStoriesSection } from "./definitions/newsAndStories";
-import { newsReleasesListingSection } from "./definitions/newsReleasesListing";
+import { newsReleasesTableSection } from "./definitions/newsReleasesTable";
 
 /**
  * Central section registry.
@@ -18,5 +18,5 @@ export const sectionRegistry: SectionDefinition[] = [
   stockTickerSection,
   cardsSection,
   newsAndStoriesSection,
-  newsReleasesListingSection,
+  newsReleasesTableSection,
 ];

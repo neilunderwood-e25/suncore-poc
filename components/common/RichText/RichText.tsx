@@ -33,6 +33,7 @@ type Asset = {
 type RichTextLinks = {
   assets?: {
     block?: Array<Asset | null>;
+    hyperlink?: Array<Asset | null>;
   };
   entries?: {
     block?: Array<EmbeddedEntry | null>;
@@ -69,9 +70,11 @@ function buildAssetMap(
   assets: RichTextLinks["assets"]
 ): Map<string, Asset> {
   const map = new Map<string, Asset>();
-  for (const asset of assets?.block ?? []) {
-    if (asset?.sys?.id) {
-      map.set(asset.sys.id, asset);
+  for (const list of [assets?.block, assets?.hyperlink]) {
+    for (const asset of list ?? []) {
+      if (asset?.sys?.id) {
+        map.set(asset.sys.id, asset);
+      }
     }
   }
   return map;
@@ -295,28 +298,63 @@ export function RichTextRenderer({
         </blockquote>
       ),
       [BLOCKS.HR]: () => <hr className="my-8 border-zinc-200" />,
-      [BLOCKS.TABLE]: (_node, children) => (
-        <div className="my-6 overflow-x-auto">
-          <table className="min-w-full border-collapse border border-zinc-200">
-            <tbody>{children}</tbody>
-          </table>
-        </div>
-      ),
+      [BLOCKS.TABLE]: (node, children) => {
+        const firstRow = node.content?.[0];
+        const hasHeader =
+          "content" in firstRow &&
+          firstRow.content?.[0]?.nodeType === "table-header-cell";
+
+        if (hasHeader) {
+          const [headerChild, ...bodyChildren] = children as React.ReactNode[];
+          return (
+            <div className="my-6 overflow-x-auto">
+              <table className="min-w-full">
+                <thead>{headerChild}</thead>
+                <tbody>{bodyChildren}</tbody>
+              </table>
+            </div>
+          );
+        }
+
+        return (
+          <div className="my-6 overflow-x-auto">
+            <table className="min-w-full">
+              <tbody>{children}</tbody>
+            </table>
+          </div>
+        );
+      },
       [BLOCKS.TABLE_ROW]: (_node, children) => (
-        <tr className="border-b border-zinc-200">{children}</tr>
+        <tr>{children}</tr>
       ),
       [BLOCKS.TABLE_HEADER_CELL]: (_node, children) => (
-        <th className="border border-zinc-200 bg-zinc-50 px-4 py-2 text-left text-sm font-semibold">
+        <th className="bg-zinc-100 px-4 py-2 text-left text-sm font-semibold">
           {children}
         </th>
       ),
       [BLOCKS.TABLE_CELL]: (_node, children) => (
-        <td className="border border-zinc-200 px-4 py-2 text-sm">
+        <td className="border-t border-zinc-200 px-4 py-2 text-sm">
           {children}
         </td>
       ),
       [INLINES.HYPERLINK]: (node, children) =>
         renderHyperlink(node, children),
+      [INLINES.ASSET_HYPERLINK]: (node, children) => {
+        const assetId = node.data?.target?.sys?.id;
+        const asset = assetId ? assetMap.get(assetId) : null;
+        if (!asset?.url) return <span>{children}</span>;
+        const url = asset.url.startsWith("//") ? `https:${asset.url}` : asset.url;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-dusty-blue underline underline-offset-2 hover:text-midnight"
+          >
+            {children}
+          </a>
+        );
+      },
       [INLINES.ENTRY_HYPERLINK]: (node, children) =>
         renderEntryHyperlink(node, children, entryMap),
       [INLINES.EMBEDDED_ENTRY]: (node) =>
