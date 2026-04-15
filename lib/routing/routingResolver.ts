@@ -34,10 +34,15 @@ type TemplateResolver = {
 const TEMPLATE_RESOLVERS: TemplateResolver[] = [
   {
     prefix: RoutePrefix.NEWS_AND_STORIES,
-    resolve: ([, second]) => {
+    resolve: (segments) => {
+      const [, second] = segments;
       // /news-and-stories → flexible page (listing page)
       if (!second) {
         return { type: TemplateType.FLEXIBLE, slug: "news-and-stories" };
+      }
+      // /news-and-stories/news-releases → flexible page with sections
+      if (second === "news-releases") {
+        return { type: TemplateType.FLEXIBLE, slug: segments.join("/") };
       }
       // /news-and-stories/article-slug → article detail template
       return { type: TemplateType.NEWS_ARTICLE_DETAIL, slug: second };

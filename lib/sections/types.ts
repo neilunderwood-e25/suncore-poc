@@ -180,6 +180,31 @@ export type NewsAndStoriesSection = BaseSection & {
   cta?: CtaEntry | null;
 };
 
+/* ------------------------------------------------------------------ */
+/*  News Release types                                                 */
+/* ------------------------------------------------------------------ */
+
+export type NewsRelease = {
+  sys: { id: string };
+  title?: string | null;
+  releaseDate?: string | null;
+  pdfDocument?: {
+    url: string | null;
+    title?: string | null;
+    fileName?: string | null;
+    size?: number | null;
+    contentType?: string | null;
+  } | null;
+  externalUrl?: string | null;
+  pageCount?: number | null;
+};
+
+export type NewsReleasesListingSection = BaseSection & {
+  type: "newsReleasesListing";
+  heading?: string | null;
+  releases: NewsRelease[];
+};
+
 export type UnknownSection = BaseSection & {
   type: "unknown";
   raw: unknown;
@@ -194,4 +219,5 @@ export type Section =
   | StockTickerSection
   | CardsSection
   | NewsAndStoriesSection
+  | NewsReleasesListingSection
   | UnknownSection;
